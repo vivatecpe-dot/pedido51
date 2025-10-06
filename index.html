@@ -1649,47 +1649,47 @@
                                     <div class="sql-code" style="max-height: 400px; overflow-y: auto; margin-top: 1.5rem; text-align: left;">
 <pre>
 -- ========= SCRIPT DE CONFIGURACIÓN Y SINCRONIZACIÓN v12 (Gestión de Lotes Opcional) =========
-CREATE TABLE IF NOT EXISTS public.categorias (id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY, nombre text NOT NULL, slug text NOT NULL UNIQUE, created_at timestamptz DEFAULT now());
-CREATE TABLE IF NOT EXISTS public.productos (id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY, nombre text NOT NULL, precio numeric NOT NULL DEFAULT 0, created_at timestamptz DEFAULT now());
-CREATE TABLE IF NOT EXISTS public.pedidos (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), numero_pedido serial NOT NULL, fecha_pedido timestamptz DEFAULT now(), nombre_cliente text, telefono_cliente text, email_cliente text, direccion text, productos jsonb, total numeric, cantidad_items integer, estado text, latitud double precision, longitud double precision);
-CREATE TABLE IF NOT EXISTS public.configuracion (clave text PRIMARY KEY, valor text, updated_at timestamptz DEFAULT now());
-CREATE TABLE IF NOT EXISTS public.lotes_inventario (id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY, producto_id bigint NOT NULL, numero_lote text, fecha_vencimiento date, cantidad integer NOT NULL DEFAULT 0, created_at timestamptz DEFAULT now(), CONSTRAINT lotes_inventario_producto_id_fkey FOREIGN KEY (producto_id) REFERENCES public.productos(id) ON DELETE CASCADE);
+CREATE TABLE IF NOT EXISTS public.categorias51 (id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY, nombre text NOT NULL, slug text NOT NULL UNIQUE, created_at timestamptz DEFAULT now());
+CREATE TABLE IF NOT EXISTS public.productos51 (id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY, nombre text NOT NULL, precio numeric NOT NULL DEFAULT 0, created_at timestamptz DEFAULT now());
+CREATE TABLE IF NOT EXISTS public.pedidos51 (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), numero_pedido serial NOT NULL, fecha_pedido timestamptz DEFAULT now(), nombre_cliente text, telefono_cliente text, email_cliente text, direccion text, productos jsonb, total numeric, cantidad_items integer, estado text, latitud double precision, longitud double precision);
+CREATE TABLE IF NOT EXISTS public.configuracion51 (clave text PRIMARY KEY, valor text, updated_at timestamptz DEFAULT now());
+CREATE TABLE IF NOT EXISTS public.lotes_inventario51 (id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY, producto_id bigint NOT NULL, numero_lote text, fecha_vencimiento date, cantidad integer NOT NULL DEFAULT 0, created_at timestamptz DEFAULT now(), CONSTRAINT lotes_inventario_producto_id_fkey FOREIGN KEY (producto_id) REFERENCES public.productos51(id) ON DELETE CASCADE);
 DO $$ BEGIN
     CREATE TYPE public.tipo_movimiento_enum AS ENUM ('INGRESO_COMPRA', 'SALIDA_VENTA', 'AJUSTE_MANUAL');
 EXCEPTION
     WHEN duplicate_object THEN null;
 END $$;
-CREATE TABLE IF NOT EXISTS public.movimientos_inventario (id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY, producto_id bigint NOT NULL, lote_id bigint, tipo_movimiento tipo_movimiento_enum NOT NULL, cantidad integer NOT NULL, stock_resultante integer NOT NULL, fecha_movimiento timestamptz DEFAULT now(), usuario_email text, referencia_id text, proveedor text, CONSTRAINT movimientos_inventario_producto_id_fkey FOREIGN KEY (producto_id) REFERENCES public.productos(id) ON DELETE CASCADE, CONSTRAINT movimientos_inventario_lote_id_fkey FOREIGN KEY (lote_id) REFERENCES public.lotes_inventario(id) ON DELETE SET NULL);
+CREATE TABLE IF NOT EXISTS public.movimientos_inventario51 (id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY, producto_id bigint NOT NULL, lote_id bigint, tipo_movimiento tipo_movimiento_enum NOT NULL, cantidad integer NOT NULL, stock_resultante integer NOT NULL, fecha_movimiento timestamptz DEFAULT now(), usuario_email text, referencia_id text, proveedor text, CONSTRAINT movimientos_inventario_producto_id_fkey FOREIGN KEY (producto_id) REFERENCES public.productos51(id) ON DELETE CASCADE, CONSTRAINT movimientos_inventario_lote_id_fkey FOREIGN KEY (lote_id) REFERENCES public.lotes_inventario51(id) ON DELETE SET NULL);
 
--- Sincronización de la tabla 'productos'
-ALTER TABLE public.productos DROP COLUMN IF EXISTS categoria;
-ALTER TABLE public.productos ADD COLUMN IF NOT EXISTS marca text, ADD COLUMN IF NOT EXISTS descripcion text, ADD COLUMN IF NOT EXISTS imagen_url text, ADD COLUMN IF NOT EXISTS icon text, ADD COLUMN IF NOT EXISTS badge text, ADD COLUMN IF NOT EXISTS activo boolean DEFAULT true, ADD COLUMN IF NOT EXISTS variantes jsonb, ADD COLUMN IF NOT EXISTS categoria_id bigint, ADD COLUMN IF NOT EXISTS stock integer NOT NULL DEFAULT 0, ADD COLUMN IF NOT EXISTS precio_costo numeric NOT NULL DEFAULT 0, ADD COLUMN IF NOT EXISTS gestiona_lotes boolean DEFAULT true;
-ALTER TABLE public.productos DROP CONSTRAINT IF EXISTS productos_categoria_id_fkey; 
-ALTER TABLE public.productos ADD CONSTRAINT productos_categoria_id_fkey FOREIGN KEY (categoria_id) REFERENCES public.categorias(id) ON DELETE SET NULL;
+-- Sincronización de la tabla 'productos51'
+ALTER TABLE public.productos51 DROP COLUMN IF EXISTS categoria;
+ALTER TABLE public.productos51 ADD COLUMN IF NOT EXISTS marca text, ADD COLUMN IF NOT EXISTS descripcion text, ADD COLUMN IF NOT EXISTS imagen_url text, ADD COLUMN IF NOT EXISTS icon text, ADD COLUMN IF NOT EXISTS badge text, ADD COLUMN IF NOT EXISTS activo boolean DEFAULT true, ADD COLUMN IF NOT EXISTS variantes jsonb, ADD COLUMN IF NOT EXISTS categoria_id bigint, ADD COLUMN IF NOT EXISTS stock integer NOT NULL DEFAULT 0, ADD COLUMN IF NOT EXISTS precio_costo numeric NOT NULL DEFAULT 0, ADD COLUMN IF NOT EXISTS gestiona_lotes boolean DEFAULT true;
+ALTER TABLE public.productos51 DROP CONSTRAINT IF EXISTS productos_categoria_id_fkey; 
+ALTER TABLE public.productos51 ADD CONSTRAINT productos_categoria_id_fkey FOREIGN KEY (categoria_id) REFERENCES public.categorias51(id) ON DELETE SET NULL;
 
--- Sincronización de la tabla 'pedidos'
-ALTER TABLE public.pedidos ADD COLUMN IF NOT EXISTS stock_descontado boolean DEFAULT false NOT NULL;
+-- Sincronización de la tabla 'pedidos51'
+ALTER TABLE public.pedidos51 ADD COLUMN IF NOT EXISTS stock_descontado boolean DEFAULT false NOT NULL;
 
 -- Políticas de Seguridad (RLS)
-ALTER TABLE public.categorias ENABLE ROW LEVEL SECURITY; ALTER TABLE public.productos ENABLE ROW LEVEL SECURITY; ALTER TABLE public.pedidos ENABLE ROW LEVEL SECURITY; ALTER TABLE public.configuracion ENABLE ROW LEVEL SECURITY; ALTER TABLE public.lotes_inventario ENABLE ROW LEVEL SECURITY; ALTER TABLE public.movimientos_inventario ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Public read access" ON public.categorias; CREATE POLICY "Public read access" ON public.categorias FOR SELECT USING (true);
-DROP POLICY IF EXISTS "Public read access" ON public.productos; CREATE POLICY "Public read access" ON public.productos FOR SELECT USING (true);
-DROP POLICY IF EXISTS "Public read access" ON public.configuracion; CREATE POLICY "Public read access" ON public.configuracion FOR SELECT USING (true);
-DROP POLICY IF EXISTS "Allow public insert" ON public.pedidos; CREATE POLICY "Allow public insert" ON public.pedidos FOR INSERT WITH CHECK (true);
-DROP POLICY IF EXISTS "Allow full access for authenticated users" ON public.categorias; CREATE POLICY "Allow full access for authenticated users" ON public.categorias FOR ALL USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
-DROP POLICY IF EXISTS "Allow full access for authenticated users" ON public.productos; CREATE POLICY "Allow full access for authenticated users" ON public.productos FOR ALL USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
-DROP POLICY IF EXISTS "Allow full access for authenticated users" ON public.pedidos; CREATE POLICY "Allow full access for authenticated users" ON public.pedidos FOR ALL USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
-DROP POLICY IF EXISTS "Allow full access for authenticated users" ON public.configuracion; CREATE POLICY "Allow full access for authenticated users" ON public.configuracion FOR ALL USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
-DROP POLICY IF EXISTS "Allow full access for authenticated users" ON public.lotes_inventario; CREATE POLICY "Allow full access for authenticated users" ON public.lotes_inventario FOR ALL USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
-DROP POLICY IF EXISTS "Allow full access for authenticated users" ON public.movimientos_inventario; CREATE POLICY "Allow full access for authenticated users" ON public.movimientos_inventario FOR ALL USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
+ALTER TABLE public.categorias51 ENABLE ROW LEVEL SECURITY; ALTER TABLE public.productos51 ENABLE ROW LEVEL SECURITY; ALTER TABLE public.pedidos51 ENABLE ROW LEVEL SECURITY; ALTER TABLE public.configuracion51 ENABLE ROW LEVEL SECURITY; ALTER TABLE public.lotes_inventario51 ENABLE ROW LEVEL SECURITY; ALTER TABLE public.movimientos_inventario51 ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public read access" ON public.categorias51; CREATE POLICY "Public read access" ON public.categorias51 FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Public read access" ON public.productos51; CREATE POLICY "Public read access" ON public.productos51 FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Public read access" ON public.configuracion51; CREATE POLICY "Public read access" ON public.configuracion51 FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Allow public insert" ON public.pedidos51; CREATE POLICY "Allow public insert" ON public.pedidos51 FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "Allow full access for authenticated users" ON public.categorias51; CREATE POLICY "Allow full access for authenticated users" ON public.categorias51 FOR ALL USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
+DROP POLICY IF EXISTS "Allow full access for authenticated users" ON public.productos51; CREATE POLICY "Allow full access for authenticated users" ON public.productos51 FOR ALL USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
+DROP POLICY IF EXISTS "Allow full access for authenticated users" ON public.pedidos51; CREATE POLICY "Allow full access for authenticated users" ON public.pedidos51 FOR ALL USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
+DROP POLICY IF EXISTS "Allow full access for authenticated users" ON public.configuracion51; CREATE POLICY "Allow full access for authenticated users" ON public.configuracion51 FOR ALL USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
+DROP POLICY IF EXISTS "Allow full access for authenticated users" ON public.lotes_inventario51; CREATE POLICY "Allow full access for authenticated users" ON public.lotes_inventario51 FOR ALL USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
+DROP POLICY IF EXISTS "Allow full access for authenticated users" ON public.movimientos_inventario51; CREATE POLICY "Allow full access for authenticated users" ON public.movimientos_inventario51 FOR ALL USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
 
 -- FUNCIÓN PARA ACTUALIZAR EL STOCK TOTAL DE UN PRODUCTO
 DROP FUNCTION IF EXISTS public.actualizar_stock_producto(bigint);
 CREATE OR REPLACE FUNCTION public.actualizar_stock_producto(id_producto bigint) RETURNS integer LANGUAGE plpgsql SECURITY DEFINER AS $$
 DECLARE stock_total integer;
 BEGIN
-    SELECT COALESCE(SUM(cantidad), 0) INTO stock_total FROM public.lotes_inventario WHERE producto_id = id_producto AND (fecha_vencimiento IS NULL OR fecha_vencimiento >= CURRENT_DATE);
-    UPDATE public.productos SET stock = stock_total WHERE id = id_producto;
+    SELECT COALESCE(SUM(cantidad), 0) INTO stock_total FROM public.lotes_inventario51 WHERE producto_id = id_producto AND (fecha_vencimiento IS NULL OR fecha_vencimiento >= CURRENT_DATE);
+    UPDATE public.productos51 SET stock = stock_total WHERE id = id_producto;
     RETURN stock_total;
 END; $$;
 GRANT EXECUTE ON FUNCTION public.actualizar_stock_producto(bigint) TO authenticated;
@@ -1699,13 +1699,13 @@ CREATE OR REPLACE FUNCTION public.registrar_ingreso_stock(id_producto bigint, lo
 DECLARE lote_data jsonb; nuevo_lote_id bigint; stock_actualizado integer;
 BEGIN
     FOR lote_data IN SELECT * FROM jsonb_array_elements(lotes) LOOP
-        INSERT INTO public.lotes_inventario (producto_id, numero_lote, fecha_vencimiento, cantidad)
+        INSERT INTO public.lotes_inventario51 (producto_id, numero_lote, fecha_vencimiento, cantidad)
         VALUES (id_producto, lote_data->>'numero_lote', (lote_data->>'fecha_vencimiento')::date, (lote_data->>'cantidad')::integer)
         RETURNING id INTO nuevo_lote_id;
 
         SELECT public.actualizar_stock_producto(id_producto) INTO stock_actualizado;
 
-        INSERT INTO public.movimientos_inventario (producto_id, lote_id, tipo_movimiento, cantidad, stock_resultante, usuario_email, referencia_id, proveedor)
+        INSERT INTO public.movimientos_inventario51 (producto_id, lote_id, tipo_movimiento, cantidad, stock_resultante, usuario_email, referencia_id, proveedor)
         VALUES (id_producto, nuevo_lote_id, 'INGRESO_COMPRA', (lote_data->>'cantidad')::integer, stock_actualizado, auth.email(), comprobante, prov);
     END LOOP;
 END; $$;
@@ -1715,31 +1715,31 @@ GRANT EXECUTE ON FUNCTION public.registrar_ingreso_stock(bigint, jsonb, text, te
 CREATE OR REPLACE FUNCTION public.descontar_stock_pedido(id_pedido uuid) RETURNS text LANGUAGE plpgsql SECURITY DEFINER AS $$
 DECLARE producto_rec record; lote_rec record; cantidad_a_descontar integer; stock_total_producto integer; stock_actualizado integer; pedido_numero integer;
 BEGIN
-    IF (SELECT stock_descontado FROM public.pedidos WHERE id = id_pedido) THEN RETURN 'El stock para este pedido ya fue descontado previamente.'; END IF;
-    SELECT numero_pedido INTO pedido_numero FROM public.pedidos WHERE id = id_pedido;
-    FOR producto_rec IN SELECT (p->>'id')::bigint AS producto_id, (p->>'cantidad')::integer AS cantidad, (p->>'producto')::text AS nombre_producto FROM public.pedidos, jsonb_array_elements(productos) AS p WHERE id = id_pedido LOOP
-        SELECT stock INTO stock_total_producto FROM public.productos WHERE id = producto_rec.producto_id;
+    IF (SELECT stock_descontado FROM public.pedidos51 WHERE id = id_pedido) THEN RETURN 'El stock para este pedido ya fue descontado previamente.'; END IF;
+    SELECT numero_pedido INTO pedido_numero FROM public.pedidos51 WHERE id = id_pedido;
+    FOR producto_rec IN SELECT (p->>'id')::bigint AS producto_id, (p->>'cantidad')::integer AS cantidad, (p->>'producto')::text AS nombre_producto FROM public.pedidos51, jsonb_array_elements(productos) AS p WHERE id = id_pedido LOOP
+        SELECT stock INTO stock_total_producto FROM public.productos51 WHERE id = producto_rec.producto_id;
         IF stock_total_producto &lt; producto_rec.cantidad THEN RAISE EXCEPTION 'Stock insuficiente para el producto: "%". Stock total actual: %, Requerido: %', producto_rec.nombre_producto, stock_total_producto, producto_rec.cantidad; END IF;
     END LOOP;
-    FOR producto_rec IN SELECT (p->>'id')::bigint AS producto_id, (p->>'cantidad')::integer AS cantidad FROM public.pedidos, jsonb_array_elements(productos) AS p WHERE id = id_pedido LOOP
+    FOR producto_rec IN SELECT (p->>'id')::bigint AS producto_id, (p->>'cantidad')::integer AS cantidad FROM public.pedidos51, jsonb_array_elements(productos) AS p WHERE id = id_pedido LOOP
         cantidad_a_descontar := producto_rec.cantidad;
-        FOR lote_rec IN SELECT * FROM public.lotes_inventario WHERE producto_id = producto_rec.producto_id AND cantidad > 0 AND (fecha_vencimiento IS NULL OR fecha_vencimiento >= CURRENT_DATE) ORDER BY fecha_vencimiento ASC NULLS LAST LOOP
+        FOR lote_rec IN SELECT * FROM public.lotes_inventario51 WHERE producto_id = producto_rec.producto_id AND cantidad > 0 AND (fecha_vencimiento IS NULL OR fecha_vencimiento >= CURRENT_DATE) ORDER BY fecha_vencimiento ASC NULLS LAST LOOP
             IF cantidad_a_descontar = 0 THEN EXIT; END IF;
             IF lote_rec.cantidad >= cantidad_a_descontar THEN
-                UPDATE public.lotes_inventario SET cantidad = cantidad - cantidad_a_descontar WHERE id = lote_rec.id;
+                UPDATE public.lotes_inventario51 SET cantidad = cantidad - cantidad_a_descontar WHERE id = lote_rec.id;
                 SELECT public.actualizar_stock_producto(producto_rec.producto_id) INTO stock_actualizado;
-                INSERT INTO public.movimientos_inventario (producto_id, lote_id, tipo_movimiento, cantidad, stock_resultante, usuario_email, referencia_id) VALUES (producto_rec.producto_id, lote_rec.id, 'SALIDA_VENTA', cantidad_a_descontar * -1, stock_actualizado, auth.email(), 'Pedido #' || pedido_numero);
+                INSERT INTO public.movimientos_inventario51 (producto_id, lote_id, tipo_movimiento, cantidad, stock_resultante, usuario_email, referencia_id) VALUES (producto_rec.producto_id, lote_rec.id, 'SALIDA_VENTA', cantidad_a_descontar * -1, stock_actualizado, auth.email(), 'Pedido #' || pedido_numero);
                 cantidad_a_descontar := 0;
             ELSE
-                INSERT INTO public.movimientos_inventario (producto_id, lote_id, tipo_movimiento, cantidad, stock_resultante, usuario_email, referencia_id) VALUES (producto_rec.producto_id, lote_rec.id, 'SALIDA_VENTA', lote_rec.cantidad * -1, (SELECT stock FROM public.productos WHERE id = producto_rec.producto_id) - lote_rec.cantidad, auth.email(), 'Pedido #' || pedido_numero);
+                INSERT INTO public.movimientos_inventario51 (producto_id, lote_id, tipo_movimiento, cantidad, stock_resultante, usuario_email, referencia_id) VALUES (producto_rec.producto_id, lote_rec.id, 'SALIDA_VENTA', lote_rec.cantidad * -1, (SELECT stock FROM public.productos51 WHERE id = producto_rec.producto_id) - lote_rec.cantidad, auth.email(), 'Pedido #' || pedido_numero);
                 cantidad_a_descontar := cantidad_a_descontar - lote_rec.cantidad;
-                UPDATE public.lotes_inventario SET cantidad = 0 WHERE id = lote_rec.id;
+                UPDATE public.lotes_inventario51 SET cantidad = 0 WHERE id = lote_rec.id;
             END IF;
         END LOOP;
         IF cantidad_a_descontar > 0 THEN RAISE EXCEPTION 'Error de concurrencia o stock inconsistente al procesar el producto ID %.', producto_rec.producto_id; END IF;
         PERFORM public.actualizar_stock_producto(producto_rec.producto_id);
     END LOOP;
-    UPDATE public.pedidos SET stock_descontado = true WHERE id = id_pedido;
+    UPDATE public.pedidos51 SET stock_descontado = true WHERE id = id_pedido;
     RETURN 'Stock descontado exitosamente con estrategia FEFO y auditoría registrada.';
 END; $$;
 GRANT EXECUTE ON FUNCTION public.descontar_stock_pedido(uuid) TO authenticated;
@@ -2012,7 +2012,7 @@ NOTIFY pgrst_reload_schema;
             if (!supabaseClient) return;
             try {
                 const { data, error } = await supabaseClient
-                    .from('configuracion')
+                    .from('configuracion51')
                     .select('clave, valor');
                 
                 if (error) {
@@ -2040,7 +2040,7 @@ NOTIFY pgrst_reload_schema;
         async function cargarCategorias() {
             if (!supabaseClient) return;
             try {
-                const { data, error } = await supabaseClient.from('categorias').select('*').order('nombre');
+                const { data, error } = await supabaseClient.from('categorias51').select('*').order('nombre');
                 if (error) {
                     console.warn("Advertencia al cargar categorías:", error.message);
                     categorias = [];
@@ -2147,7 +2147,7 @@ NOTIFY pgrst_reload_schema;
 
             try {
                 const { error } = await supabaseClient
-                    .from('configuracion')
+                    .from('configuracion51')
                     .upsert({ clave: 'hero_image_url', valor: heroImageUrl }, { onConflict: 'clave' });
                 if (error) throw error;
                 
@@ -2195,8 +2195,8 @@ NOTIFY pgrst_reload_schema;
             document.getElementById('productsGrid').innerHTML = '';
             try {
                 const { data, error } = await supabaseClient
-                    .from('productos')
-                    .select('*, categorias(nombre, slug)')
+                    .from('productos51')
+                    .select('*, categorias51(nombre, slug)')
                     .eq('activo', true)
                     .order('nombre');
 
@@ -2245,7 +2245,7 @@ NOTIFY pgrst_reload_schema;
             const grid = document.getElementById('productsGrid');
             const productosFiltrados = categoriaActual === 'todos' 
                 ? productos 
-                : productos.filter(p => p.categorias && p.categorias.slug === categoriaActual);
+                : productos.filter(p => p.categorias51 && p.categorias51.slug === categoriaActual);
             
             if (productosFiltrados.length === 0) {
                 grid.innerHTML = '<div class="empty-cart"><p>No hay productos en esta categoria.</p></div>';
@@ -2292,7 +2292,7 @@ NOTIFY pgrst_reload_schema;
                         ${producto.stock <= 0 ? `<span class="product-badge" style="background: var(--text-dark); left: 15px; right: auto;">Agotado</span>` : ''}
                     </div>
                     <div class="product-info">
-                        <div class="product-category">${producto.categorias ? producto.categorias.nombre : 'Sin Categoría'}</div>
+                        <div class="product-category">${producto.categorias51 ? producto.categorias51.nombre : 'Sin Categoría'}</div>
                         <h3 class="product-name">${producto.nombre}</h3>
                         <div class="product-brand">${producto.marca}</div>
                         <p class="product-description">${producto.descripcion}</p>
@@ -2651,7 +2651,7 @@ NOTIFY pgrst_reload_schema;
                 };
             
                 const { data: pedidoGuardado, error } = await supabaseClient
-                    .from('pedidos')
+                    .from('pedidos51')
                     .insert([pedidoData])
                     .select()
                     .single();
@@ -2695,7 +2695,7 @@ NOTIFY pgrst_reload_schema;
             if (!supabaseClient) return;
             try {
                 const { data, error } = await supabaseClient
-                    .from('pedidos')
+                    .from('pedidos51')
                     .select('*')
                     .order('fecha_pedido', { ascending: false });
                 
@@ -2841,7 +2841,7 @@ NOTIFY pgrst_reload_schema;
                 }
                 
                 const { error } = await supabaseClient
-                    .from('pedidos')
+                    .from('pedidos51')
                     .update({ estado: nuevoEstado })
                     .eq('id', pedidoId);
                 if (error) throw error;
@@ -2878,10 +2878,10 @@ NOTIFY pgrst_reload_schema;
                 supabaseClient.removeChannel(pedidosChannel);
             }
             pedidosChannel = supabaseClient
-                .channel('pedidos-db-changes')
+                .channel('pedidos51-db-changes')
                 .on(
                     'postgres_changes',
-                    { event: '*', schema: 'public', table: 'pedidos' },
+                    { event: '*', schema: 'public', table: 'pedidos51' },
                     (payload) => {
                         console.log('Cambio recibido en pedidos!', payload);
                         const changedRecord = payload.new;
@@ -2957,12 +2957,12 @@ NOTIFY pgrst_reload_schema;
             if (!supabaseClient) return;
             document.getElementById('loadingAdmin').style.display = 'block';
             try {
-                const { data, error } = await supabaseClient.from('productos').select('*, categorias(nombre)').order('nombre');
+                const { data, error } = await supabaseClient.from('productos51').select('*, categorias51(nombre)').order('nombre');
                 if (error) throw error;
                 
                 productosAdmin = (data || []).map(p => ({
                     ...p,
-                    categorias: p.categorias ? { nombre: p.categorias.nombre } : null
+                    categorias51: p.categorias51 ? { nombre: p.categorias51.nombre } : null
                 }));
 
                 renderizarProductosAdmin();
@@ -3018,7 +3018,7 @@ NOTIFY pgrst_reload_schema;
                 <tr style="cursor: default;">
                     <td>${imagenPrincipal ? `<img src="${optimizarImagenUrl(imagenPrincipal, 50)}" alt="${p.nombre}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;" onerror="this.style.display='none'">` : '<span style="font-size: 0.8rem; color: #999;">Sin imagen</span>'}</td>
                     <td>${p.nombre}</td>
-                    <td>${p.categorias ? p.categorias.nombre : 'Sin categoría'}</td>
+                    <td>${p.categorias51 ? p.categorias51.nombre : 'Sin categoría'}</td>
                     <td>S/ ${parseFloat(p.precio).toFixed(2)}</td>
                     <td>${p.variantes && p.variantes.length > 0 ? `${p.variantes.length} tipo(s)` : 'No'}</td>
                     <td>${p.activo ? 'Activo' : 'Inactivo'}</td>
@@ -3045,7 +3045,7 @@ NOTIFY pgrst_reload_schema;
         async function cargarCategoriasAdmin() {
             if(!supabaseClient) return;
             try {
-                const { data, error } = await supabaseClient.from('categorias').select('*').order('nombre');
+                const { data, error } = await supabaseClient.from('categorias51').select('*').order('nombre');
                 if (error) throw error;
                 const tbody = document.getElementById('adminCategoriesTable');
                 tbody.innerHTML = (data || []).map(cat => `
@@ -3086,7 +3086,7 @@ NOTIFY pgrst_reload_schema;
         async function editarCategoria(id, event) {
             event.stopPropagation();
             try {
-                const { data, error } = await supabaseClient.from('categorias').select('*').eq('id', id).single();
+                const { data, error } = await supabaseClient.from('categorias51').select('*').eq('id', id).single();
                 if (error) throw error;
                 document.getElementById('categoriaModalTitle').textContent = 'Editar Categoría';
                 document.getElementById('categoriaId').value = data.id;
@@ -3118,11 +3118,11 @@ NOTIFY pgrst_reload_schema;
 
             try {
                 if (id) {
-                    const { error } = await supabaseClient.from('categorias').update(categoria).eq('id', id);
+                    const { error } = await supabaseClient.from('categorias51').update(categoria).eq('id', id);
                     if (error) throw error;
                     mostrarNotificacion('✅ Categoría actualizada');
                 } else {
-                    const { error } = await supabaseClient.from('categorias').insert([categoria]);
+                    const { error } = await supabaseClient.from('categorias51').insert([categoria]);
                     if (error) throw error;
                     mostrarNotificacion('✅ Categoría creada');
                 }
@@ -3138,7 +3138,7 @@ NOTIFY pgrst_reload_schema;
             event.stopPropagation();
             if (!confirm('¿Estás seguro? Eliminar una categoría fallará si todavía hay productos en ella.')) return;
             try {
-                const { error } = await supabaseClient.from('categorias').delete().eq('id', id);
+                const { error } = await supabaseClient.from('categorias51').delete().eq('id', id);
                 if (error) throw error;
                 mostrarNotificacion('🗑️ Categoría eliminada');
                 await cargarCategorias();
@@ -3197,7 +3197,7 @@ NOTIFY pgrst_reload_schema;
         async function editarProducto(id, event) {
             event.stopPropagation();
             try {
-                const { data, error } = await supabaseClient.from('productos').select('*').eq('id', id).single();
+                const { data, error } = await supabaseClient.from('productos51').select('*').eq('id', id).single();
                 if (error) throw error;
                 const form = document.getElementById('productoForm');
                 
@@ -3356,11 +3356,11 @@ NOTIFY pgrst_reload_schema;
             
             try {
                 if (id) {
-                    const { error } = await supabaseClient.from('productos').update(producto).eq('id', id);
+                    const { error } = await supabaseClient.from('productos51').update(producto).eq('id', id);
                     if (error) throw error;
                     mostrarNotificacion('✅ Producto actualizado exitosamente');
                 } else {
-                    const { error } = await supabaseClient.from('productos').insert([producto]);
+                    const { error } = await supabaseClient.from('productos51').insert([producto]);
                     if (error) throw error;
                     mostrarNotificacion('✅ Producto creado exitosamente');
                 }
@@ -3385,7 +3385,7 @@ NOTIFY pgrst_reload_schema;
             event.stopPropagation();
             if (!confirm('¿Estás seguro de eliminar este producto? Esta acción también eliminará todos sus lotes de inventario y movimientos asociados.')) return;
             try {
-                const { error } = await supabaseClient.from('productos').delete().eq('id', id);
+                const { error } = await supabaseClient.from('productos51').delete().eq('id', id);
                 if (error) throw error;
                 mostrarNotificacion('🗑️ Producto eliminado exitosamente');
                 await cargarProductosAdmin();
@@ -3400,7 +3400,7 @@ NOTIFY pgrst_reload_schema;
         async function cargarInventario() {
             if (!supabaseClient) return;
             try {
-                const { data, error } = await supabaseClient.from('productos').select('id, nombre, stock, precio_costo').order('nombre');
+                const { data, error } = await supabaseClient.from('productos51').select('id, nombre, stock, precio_costo').order('nombre');
                 if (error) throw error;
                 inventario = data || [];
                 renderizarInventario();
@@ -3451,7 +3451,7 @@ NOTIFY pgrst_reload_schema;
             tbody.innerHTML = '<tr><td colspan="6" class="loading">Cargando historial...</td></tr>';
             try {
                 const { data, error } = await supabaseClient
-                    .from('movimientos_inventario')
+                    .from('movimientos_inventario51')
                     .select('*')
                     .eq('producto_id', productoId)
                     .order('fecha_movimiento', { ascending: false });
@@ -3715,7 +3715,7 @@ NOTIFY pgrst_reload_schema;
                          return;
                     }
 
-                    const { error } = await supabaseClient.from('productos').insert(productosParaSupabase);
+                    const { error } = await supabaseClient.from('productos51').insert(productosParaSupabase);
                     if (error) throw error;
                     
                     mostrarNotificacion(`✅ ${productosParaSupabase.length} productos importados exitosamente.`);
@@ -3921,7 +3921,7 @@ NOTIFY pgrst_reload_schema;
             try {
                 document.getElementById('loadingAdmin').style.display = 'block';
                 const { data, error } = await supabaseClient
-                    .from('pedidos')
+                    .from('pedidos51')
                     .select('*')
                     .gte('fecha_pedido', new Date(fechaInicio).toISOString())
                     .lte('fecha_pedido', fechaFinCompleta.toISOString())
@@ -4012,7 +4012,7 @@ NOTIFY pgrst_reload_schema;
 
             try {
                 const { data, error } = await supabaseClient
-                    .from('pedidos')
+                    .from('pedidos51')
                     .select('fecha_pedido, numero_pedido, nombre_cliente, productos')
                     .gte('fecha_pedido', new Date(fechaInicio).toISOString())
                     .lte('fecha_pedido', fechaFinCompleta.toISOString())
@@ -4082,8 +4082,8 @@ NOTIFY pgrst_reload_schema;
             
             try {
                 const { data, error } = await supabaseClient
-                    .from('movimientos_inventario')
-                    .select('*, productos(nombre)')
+                    .from('movimientos_inventario51')
+                    .select('*, productos51(nombre)')
                     .eq('tipo_movimiento', 'INGRESO_COMPRA')
                     .gte('fecha_movimiento', new Date(fechaInicio).toISOString())
                     .lte('fecha_movimiento', fechaFinCompleta.toISOString())
@@ -4099,7 +4099,7 @@ NOTIFY pgrst_reload_schema;
                 tbody.innerHTML = data.map(item => `
                     <tr>
                         <td>${new Date(item.fecha_movimiento).toLocaleString()}</td>
-                        <td>${item.productos.nombre}</td>
+                        <td>${item.productos51.nombre}</td>
                         <td>${item.cantidad}</td>
                         <td>${item.referencia_id || 'N/A'}</td>
                         <td>${item.proveedor || 'N/A'}</td>
