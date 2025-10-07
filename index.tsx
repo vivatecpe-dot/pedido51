@@ -1,284 +1,250 @@
-const menuData = [
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+
+type Product = {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  image: string;
+};
+
+type Category = {
+  id: string;
+  name: string;
+  icon: string;
+  products: Product[];
+};
+
+type CartItem = Product & {
+  quantity: number;
+};
+
+// --- DATA ---
+const menuData: Category[] = [
     {
-        name: "Hamburguesas",
-        icon: "🍔",
-        products: [
-            { name: "Hamburguesa Clásica", description: "Pan artesanal, carne 100% res, queso cheddar, lechuga, tomate, cebolla y mayonesa especial.", price: 15.90, image: "https://via.placeholder.com/300x200.png?text=Hamburguesa" },
-            { name: "Hamburguesa Doble Queso", description: "Dos medallones de carne jugosa con doble queso cheddar y salsa de la casa.", price: 20.90, image: "https://via.placeholder.com/300x200.png?text=Doble+Queso" },
-            { name: "Hamburguesa BBQ", description: "Carne de res a la parrilla con tocino crocante, queso, cebolla caramelizada y salsa BBQ.", price: 19.90, image: "https://via.placeholder.com/300x200.png?text=BBQ+Burger" },
-            { name: "Hamburguesa de Pollo Crispy", description: "Filete de pollo empanizado, lechuga, tomate y mayonesa con toque de ajo.", price: 17.90, image: "https://via.placeholder.com/300x200.png?text=Pollo+Crispy" },
-            { name: "Hamburguesa Mixta", description: "Mitad carne de res, mitad pollo, con queso y salsa ahumada.", price: 18.90, image: "https://via.placeholder.com/300x200.png?text=Mixta" },
-            { name: "Hamburguesa Veggie", description: "Medallón de garbanzos o lentejas, pan integral, lechuga, tomate y salsa de yogurt.", price: 16.90, image: "https://via.placeholder.com/300x200.png?text=Veggie" },
-            { name: "Hamburguesa Gourmet (La Especial)", description: "Carne angus, palta, huevo frito, champiñones y salsa artesanal.", price: 22.90, image: "https://via.placeholder.com/300x200.png?text=Gourmet" },
-            { name: "Mini Burgers (Sliders)", description: "Tres mini hamburguesas variadas para compartir o probar distintos sabores.", price: 25.90, image: "https://via.placeholder.com/300x200.png?text=Sliders" },
-        ]
+      id: 'hamburguesas',
+      name: 'Hamburguesas',
+      icon: '🍔',
+      products: [
+        { id: 1, name: 'Hamburguesa Clásica', description: 'Carne 100% res, queso cheddar, lechuga, tomate, cebolla y mayonesa especial.', price: 15.00, image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80' },
+        { id: 2, name: 'Hamburguesa Doble Queso', description: 'Dos medallones de carne jugosa con doble queso cheddar y salsa de la casa.', price: 20.00, image: 'https://images.unsplash.com/photo-1603771553223-4cf0483833b3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80' },
+        { id: 3, name: 'Hamburguesa BBQ', description: 'Carne a la parrilla, tocino, queso, cebolla caramelizada y salsa BBQ.', price: 18.00, image: 'https://images.unsplash.com/photo-1550547660-d9450f859349?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80' },
+        { id: 4, name: 'Hamburguesa de Pollo Crispy', description: 'Filete de pollo empanizado, lechuga, tomate y mayonesa con toque de ajo.', price: 16.00, image: 'https://images.unsplash.com/photo-1562967914-608f82629710?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80' },
+      ],
     },
     {
-        name: "Acompañamientos",
-        icon: "🍟",
-        products: [
-            { name: "Papas Fritas Clásicas", description: "Papas naturales crocantes, servidas con ketchup o mayonesa.", price: 7.90, image: "https://via.placeholder.com/300x200.png?text=Papas+Fritas" },
-            { name: "Papas al Hilo o Camote Frito", description: "Alternativa peruana con toque dulce y salado.", price: 8.90, image: "https://via.placeholder.com/300x200.png?text=Camote+Frito" },
-            { name: "Aros de Cebolla", description: "Cebollas empanizadas y fritas hasta dorar, servidas con salsa tártara.", price: 9.90, image: "https://via.placeholder.com/300x200.png?text=Aros+de+Cebolla" },
-            { name: "Nuggets de Pollo", description: "Trozos de pollo empanizado acompañados de salsas BBQ y tártara.", price: 12.90, image: "https://via.placeholder.com/300x200.png?text=Nuggets" },
-            { name: "Alitas BBQ o Picantes", description: "Alitas de pollo bañadas en salsa BBQ, búfalo o ají ahumado.", price: 15.90, image: "https://via.placeholder.com/300x200.png?text=Alitas" },
-            { name: "Yuca Frita / Tequeños", description: "Crocantes y acompañados de guacamole o ají criollo.", price: 10.90, image: "https://via.placeholder.com/300x200.png?text=Tequeños" },
-            { name: "Ensalada Fresca / Coleslaw", description: "Mezcla de col, zanahoria y aderezo especial para acompañar tu burger.", price: 6.90, image: "https://via.placeholder.com/300x200.png?text=Ensalada" },
-        ]
+      id: 'acompanamientos',
+      name: 'Acompañamientos',
+      icon: '🍟',
+      products: [
+        { id: 5, name: 'Papas Fritas Clásicas', description: 'Papas naturales crocantes, servidas con ketchup o mayonesa.', price: 7.00, image: 'https://images.unsplash.com/photo-1598679253544-2c9740680140?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80' },
+        { id: 6, name: 'Aros de Cebolla', description: 'Cebollas empanizadas y fritas, servidas con salsa tártara.', price: 8.00, image: 'https://images.unsplash.com/photo-1549849171-0761e702c270?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80' },
+        { id: 7, name: 'Nuggets de Pollo', description: 'Trozos de pollo empanizado acompañados de salsas.', price: 9.00, image: 'https://images.unsplash.com/photo-1626082912437-b615a1a1b1d8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80' },
+      ],
     },
     {
-        name: "Bebidas",
-        icon: "🧃",
-        products: [
-            { name: "Gaseosas Personales", description: "Inca Kola, Coca-Cola, Pepsi, disponibles frías.", price: 4.00, image: "https://via.placeholder.com/300x200.png?text=Gaseosas" },
-            { name: "Jugos Naturales", description: "De frutas peruanas: maracuyá, piña, fresa, mango o limón.", price: 7.00, image: "https://via.placeholder.com/300x200.png?text=Jugos" },
-            { name: "Chicha Morada / Emoliente Frío", description: "Refrescos tradicionales con toque casero.", price: 5.00, image: "https://via.placeholder.com/300x200.png?text=Chicha" },
-            { name: "Cerveza Artesanal o Nacional", description: "Cusqueña, Pilsen o marcas locales.", price: 9.00, image: "https://via.placeholder.com/300x200.png?text=Cerveza" },
-            { name: "Malteadas / Milkshakes", description: "Vainilla, chocolate, fresa o galleta Oreo.", price: 12.00, image: "https://via.placeholder.com/300x200.png?text=Milkshakes" },
-            { name: "Agua Mineral / con Gas", description: "Opcional saludable.", price: 3.00, image: "https://via.placeholder.com/300x200.png?text=Agua" },
-        ]
+      id: 'bebidas',
+      name: 'Bebidas',
+      icon: '🧃',
+      products: [
+        { id: 8, name: 'Gaseosas Personales', description: 'Inca Kola, Coca-Cola, Pepsi, disponibles frías.', price: 5.00, image: 'https://images.unsplash.com/photo-1554866585-cd94860890b7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80' },
+        { id: 9, name: 'Jugos Naturales', description: 'De frutas peruanas: maracuyá, piña, fresa, mango o limón.', price: 8.00, image: 'https://images.unsplash.com/photo-1506802963788-5235b3174579?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80' },
+        { id: 10, name: 'Milkshakes', description: 'Vainilla, chocolate, fresa o galleta Oreo.', price: 12.00, image: 'https://images.unsplash.com/photo-1572490122747-3968b75cc699?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80' },
+      ],
     },
-    {
-        name: "Postres",
-        icon: "🍰",
-        products: [
-            { name: "Brownie con Helado", description: "Brownie caliente con bola de helado de vainilla.", price: 12.90, image: "https://via.placeholder.com/300x200.png?text=Brownie" },
-            { name: "Cheesecake de Maracuyá / Fresa", description: "Porción de postre cremoso con cobertura natural.", price: 10.90, image: "https://via.placeholder.com/300x200.png?text=Cheesecake" },
-            { name: "Pie de Limón / Manzana", description: "Postre clásico casero.", price: 9.90, image: "https://via.placeholder.com/300x200.png?text=Pie+de+Limon" },
-            { name: "Galleta Gigante o Cookie Choco Chips", description: "Dulce individual para acompañar café o milkshake.", price: 6.90, image: "https://via.placeholder.com/300x200.png?text=Cookie" },
-            { name: "Helado Artesanal", description: "En vaso o cono, varios sabores.", price: 8.90, image: "https://via.placeholder.com/300x200.png?text=Helado" },
-        ]
-    },
-    {
-        name: "Combos",
-        icon: "🥡",
-        products: [
-            { name: "Combo Clásico", description: "Hamburguesa clásica + papas + gaseosa.", price: 25.90, image: "https://via.placeholder.com/300x200.png?text=Combo+Clasico" },
-            { name: "Combo Doble", description: "Hamburguesa doble + papas grandes + bebida.", price: 32.90, image: "https://via.placeholder.com/300x200.png?text=Combo+Doble" },
-            { name: "Combo Familiar", description: "2 hamburguesas + 2 papas + 2 bebidas.", price: 49.90, image: "https://via.placeholder.com/300x200.png?text=Combo+Familiar" },
-            { name: "Combo Kids", description: "Mini burger + papas pequeñas + jugo natural.", price: 19.90, image: "https://via.placeholder.com/300x200.png?text=Combo+Kids" },
-            { name: "Combo Nocturno / Midnight", description: "Hamburguesa + bebida + alitas BBQ.", price: 34.90, image: "https://via.placeholder.com/300x200.png?text=Combo+Nocturno" },
-        ]
-    },
-    {
-        name: "Extras y Adiciones",
-        icon: "🌶️",
-        products: [
-            { name: "Queso Extra", description: "Agrega más queso a tu hamburguesa.", price: 3.00, image: "https://via.placeholder.com/300x200.png?text=Queso+Extra" },
-            { name: "Tocino / Huevo / Palta", description: "Ingredientes premium para personalizar tu burger.", price: 4.00, image: "https://via.placeholder.com/300x200.png?text=Extras" },
-            { name: "Salsas Caseras", description: "BBQ, ajo, tártara, rocoto o ají amarillo.", price: 1.50, image: "https://via.placeholder.com/300x200.png?text=Salsas" },
-            { name: "Papas Grandes / Upgrade de bebida", description: "Mejora tu combo con un toque adicional.", price: 5.00, image: "https://via.placeholder.com/300x200.png?text=Upgrade" },
-        ]
+     {
+      id: 'postres',
+      name: 'Postres',
+      icon: '🍰',
+      products: [
+        { id: 11, name: 'Brownie con Helado', description: 'Brownie caliente con bola de helado de vainilla.', price: 10.00, image: 'https://images.unsplash.com/photo-1610412351934-eea8b7a1d354?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80' },
+        { id: 12, name: 'Cheesecake de Maracuyá', description: 'Porción de postre cremoso con cobertura natural.', price: 12.00, image: 'https://images.unsplash.com/photo-1543598223-14c1d497c31e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80' },
+      ],
     },
 ];
 
-const rootElement = document.getElementById('root');
-let state = {
-    activeCategoryIndex: 0,
-    cart: [],
-    isCartOpen: false,
+// --- STATE ---
+let state: {
+  selectedCategory: string;
+  cart: CartItem[];
+} = {
+  selectedCategory: menuData[0].id,
+  cart: [],
 };
 
-function setState(newState) {
-    state = { ...state, ...newState };
-    render();
+// --- DOM ELEMENTS ---
+const categoriesContainer = document.getElementById('categories-container') as HTMLElement;
+const productsGrid = document.getElementById('products-grid') as HTMLElement;
+const cartBadgeContainer = document.getElementById('cart-badge-container') as HTMLElement;
+const cartItemsContainer = document.getElementById('cart-items-container') as HTMLElement;
+const cartTotalPriceEl = document.getElementById('cart-total-price') as HTMLElement;
+const cartPanel = document.getElementById('cart-panel') as HTMLElement;
+const cartOverlay = document.getElementById('cart-overlay') as HTMLElement;
+const closeCartBtn = document.getElementById('close-cart-btn') as HTMLElement;
+const navCartBtn = document.getElementById('nav-cart') as HTMLElement;
+
+// --- RENDER FUNCTIONS ---
+function renderCategories() {
+  categoriesContainer.innerHTML = '';
+  menuData.forEach(category => {
+    const chip = document.createElement('div');
+    chip.className = `category-chip ${state.selectedCategory === category.id ? 'active' : ''}`;
+    chip.textContent = `${category.icon} ${category.name}`;
+    chip.dataset.categoryId = category.id;
+    categoriesContainer.appendChild(chip);
+  });
 }
 
-function getProductByName(name) {
-    for (const category of menuData) {
-        const product = category.products.find(p => p.name === name);
-        if (product) return product;
-    }
-    return null;
-}
+function renderProducts() {
+  productsGrid.innerHTML = '';
+  const category = menuData.find(c => c.id === state.selectedCategory);
+  if (!category) return;
 
-function handleCategoryClick(index) {
-    setState({ activeCategoryIndex: index });
-}
-
-function handleAddToCart(productName) {
-    const product = getProductByName(productName);
-    if (!product) return;
-
-    const existingItem = state.cart.find(item => item.name === productName);
-    let newCart;
-
-    if (existingItem) {
-        newCart = state.cart.map(item =>
-            item.name === productName ? { ...item, quantity: item.quantity + 1 } : item
-        );
-    } else {
-        newCart = [...state.cart, { ...product, quantity: 1 }];
-    }
-    setState({ cart: newCart });
-}
-
-function handleUpdateQuantity(productName, change) {
-    let newCart = state.cart.map(item =>
-        item.name === productName ? { ...item, quantity: Math.max(0, item.quantity + change) } : item
-    ).filter(item => item.quantity > 0);
-    setState({ cart: newCart });
-}
-
-function handleToggleCart() {
-    setState({ isCartOpen: !state.isCartOpen });
-}
-
-function renderMenu() {
-    const activeCategory = menuData[state.activeCategoryIndex];
-
-    const categoriesHTML = menuData.map((category, index) => `
-        <div 
-            class="category-item ${index === state.activeCategoryIndex ? 'active' : ''}" 
-            data-index="${index}"
-            role="button"
-            tabindex="0"
-        >
-            <span>${category.icon}</span>
-            ${category.name}
-        </div>
-    `).join('');
-
-    const productsHTML = activeCategory.products.map(product => `
-        <div class="product-card">
-            <img class="product-image" src="${product.image}" alt="${product.name}">
-            <div class="product-card-content">
-                <h3>${product.name}</h3>
-                <p>${product.description}</p>
-            </div>
-            <div class="product-card-footer">
-                <span class="product-price">S/ ${product.price.toFixed(2)}</span>
-                <button class="add-to-cart-btn" data-product-name="${product.name}" aria-label="Añadir ${product.name} al carrito">Añadir</button>
-            </div>
-        </div>
-    `).join('');
-
-    return `
-        <header>
-            <h1>Menú</h1>
-        </header>
-        <nav class="categories-list" aria-label="Categorías de menú">
-            ${categoriesHTML}
-        </nav>
-        <main class="products-section">
-            <h2>${activeCategory.icon} ${activeCategory.name}</h2>
-            <div class="products-grid">
-                ${productsHTML}
-            </div>
-        </main>
+  category.products.forEach(product => {
+    productsGrid.innerHTML += `
+      <div class="product-card" data-product-id="${product.id}">
+          <h3 class="product-name">${product.name}</h3>
+          <div class="product-image">
+            <img src="${product.image}" alt="${product.name}" loading="lazy">
+          </div>
+          <div class="product-footer">
+            <p class="product-price">S/${product.price.toFixed(2)}</p>
+            <button class="add-to-cart-btn" data-product-id="${product.id}">+</button>
+          </div>
+      </div>
     `;
+  });
 }
 
 function renderCart() {
-    const totalItems = state.cart.reduce((sum, item) => sum + item.quantity, 0);
-    const subtotal = state.cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-
-    const cartItemsHTML = state.cart.length > 0 ? state.cart.map(item => `
-        <div class="cart-item">
-            <div class="cart-item-info">
-                <h4>${item.name}</h4>
-                <p>S/ ${item.price.toFixed(2)}</p>
-            </div>
-            <div class="cart-item-controls">
-                <button class="quantity-btn" data-change="-1" data-product-name="${item.name}">-</button>
-                <span class="item-quantity">${item.quantity}</span>
-                <button class="quantity-btn" data-change="1" data-product-name="${item.name}">+</button>
-                <button class="remove-item-btn" data-change="-1000" data-product-name="${item.name}" aria-label="Eliminar ${item.name}">🗑️</button>
-            </div>
-        </div>
-    `).join('') : '<p class="empty-cart">Tu carrito está vacío.</p>';
-
-    const cartPanelHTML = `
-        <aside class="cart-panel ${state.isCartOpen || window.innerWidth >= 1024 ? 'open' : ''}">
-            <div class="cart-header">
-                <h2>Mi Pedido</h2>
-                <button class="close-cart-btn" aria-label="Cerrar carrito">&times;</button>
-            </div>
-            <div class="cart-items">${cartItemsHTML}</div>
-            ${state.cart.length > 0 ? `
-            <div class="cart-summary">
-                <div class="summary-row">
-                    <span>Subtotal</span>
-                    <span>S/ ${subtotal.toFixed(2)}</span>
+    if (state.cart.length === 0) {
+        cartItemsContainer.innerHTML = '<p class="empty-cart">Tu carrito está vacío</p>';
+    } else {
+        cartItemsContainer.innerHTML = state.cart.map(item => `
+            <div class="cart-item" data-product-id="${item.id}">
+                <img src="${item.image}" alt="${item.name}" class="cart-item-image">
+                <div class="cart-item-details">
+                    <p class="cart-item-name">${item.name}</p>
+                    <p class="cart-item-price">S/${item.price.toFixed(2)}</p>
                 </div>
-                <div class="summary-row total">
-                    <span>Total</span>
-                    <span>S/ ${subtotal.toFixed(2)}</span>
+                <div class="cart-item-actions">
+                    <button class="quantity-btn" data-action="decrease">-</button>
+                    <span class="item-quantity">${item.quantity}</span>
+                    <button class="quantity-btn" data-action="increase">+</button>
                 </div>
-                <button class="checkout-btn">Realizar Pedido</button>
             </div>
-            ` : ''}
-        </aside>
-    `;
-
-    const cartFabHTML = `
-        <button class="cart-fab" aria-label="Abrir carrito">
-            🛒
-            ${totalItems > 0 ? `<span class="cart-count">${totalItems}</span>` : ''}
-        </button>
-    `;
+        `).join('');
+    }
     
-    return cartPanelHTML + cartFabHTML;
+    const total = state.cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    cartTotalPriceEl.textContent = `S/${total.toFixed(2)}`;
+    updateCartBadge();
+}
+
+function updateCartBadge() {
+  const totalItems = state.cart.reduce((sum, item) => sum + item.quantity, 0);
+  if (totalItems > 0) {
+    cartBadgeContainer.innerHTML = `<div class="cart-badge">${totalItems}</div>`;
+  } else {
+    cartBadgeContainer.innerHTML = '';
+  }
+}
+
+// --- EVENT HANDLERS & LOGIC ---
+
+function addToCart(productId: number) {
+  const existingItem = state.cart.find(item => item.id === productId);
+
+  if (existingItem) {
+    existingItem.quantity++;
+  } else {
+    const productToAdd = menuData.flatMap(c => c.products).find(p => p.id === productId);
+    if (productToAdd) {
+      state.cart.push({ ...productToAdd, quantity: 1 });
+    }
+  }
+  renderCart();
+}
+
+function updateQuantity(productId: number, action: 'increase' | 'decrease') {
+    const item = state.cart.find(item => item.id === productId);
+    if (!item) return;
+
+    if (action === 'increase') {
+        item.quantity++;
+    } else if (action === 'decrease') {
+        item.quantity--;
+        if (item.quantity <= 0) {
+            state.cart = state.cart.filter(cartItem => cartItem.id !== productId);
+        }
+    }
+    renderCart();
 }
 
 
-function render() {
-    if (!rootElement) return;
-
-    rootElement.innerHTML = `
-        <div class="main-container">
-            <div class="menu-content">
-                ${renderMenu()}
-            </div>
-            ${renderCart()}
-        </div>
-    `;
-    
-    // Manage body scroll when cart is open on mobile
-    if (state.isCartOpen && window.innerWidth < 1024) {
-        document.body.style.overflow = 'hidden';
-    } else {
-        document.body.style.overflow = 'auto';
+function handleCategoryClick(event: Event) {
+    const target = event.target as HTMLElement;
+    const chip = target.closest('.category-chip');
+    if (chip instanceof HTMLElement && chip.dataset.categoryId) {
+        state.selectedCategory = chip.dataset.categoryId;
+        render();
     }
 }
 
-function attachEventListeners() {
-    rootElement.addEventListener('click', (event) => {
-        const target = event.target as Element;
-        
-        // Category click
-        const categoryItem = target.closest('.category-item');
-        if (categoryItem instanceof HTMLElement) {
-            handleCategoryClick(parseInt(categoryItem.dataset.index, 10));
-            return;
-        }
-
-        // Add to cart
-        const addToCartBtn = target.closest('.add-to-cart-btn');
-        if (addToCartBtn instanceof HTMLElement) {
-            handleAddToCart(addToCartBtn.dataset.productName);
-            return;
-        }
-
-        // Update quantity
-        const quantityBtn = target.closest('.quantity-btn, .remove-item-btn');
-        if (quantityBtn instanceof HTMLElement) {
-            const change = parseInt(quantityBtn.dataset.change, 10);
-            handleUpdateQuantity(quantityBtn.dataset.productName, change);
-            return;
-        }
-
-        // Toggle cart
-        const cartToggle = target.closest('.cart-fab, .close-cart-btn');
-        if (cartToggle) {
-            handleToggleCart();
-            return;
-        }
-    });
+function handleProductGridClick(event: Event) {
+    const target = event.target as HTMLElement;
+    const button = target.closest('.add-to-cart-btn');
+    if (button instanceof HTMLElement && button.dataset.productId) {
+        addToCart(Number(button.dataset.productId));
+    }
 }
 
-if (rootElement) {
-    attachEventListeners();
-    render();
-    window.addEventListener('resize', render); // Re-render on resize for responsiveness
+function handleCartItemsClick(event: Event) {
+    const target = event.target as HTMLElement;
+    const button = target.closest('.quantity-btn');
+    if (button instanceof HTMLElement) {
+        const itemEl = target.closest('.cart-item');
+        if (itemEl instanceof HTMLElement && itemEl.dataset.productId) {
+            const productId = Number(itemEl.dataset.productId);
+            const action = button.dataset.action as 'increase' | 'decrease';
+            updateQuantity(productId, action);
+        }
+    }
+}
+
+function toggleCart(visible: boolean) {
+    cartPanel.classList.toggle('visible', visible);
+    cartOverlay.classList.toggle('visible', visible);
+}
+
+// --- INITIALIZATION ---
+function render() {
+  renderCategories();
+  renderProducts();
+  renderCart();
+}
+
+function init() {
+  categoriesContainer.addEventListener('click', handleCategoryClick);
+  productsGrid.addEventListener('click', handleProductGridClick);
+  cartItemsContainer.addEventListener('click', handleCartItemsClick);
+  navCartBtn.addEventListener('click', () => toggleCart(true));
+  closeCartBtn.addEventListener('click', () => toggleCart(false));
+  cartOverlay.addEventListener('click', () => toggleCart(false));
+  render();
+}
+
+init();
+
+// React entry point - not used for app logic in this file,
+// but required by the environment setup.
+const App = () => {
+  return <h1>Pedidos51 Loaded</h1>;
+};
+
+const container = document.getElementById('app-root');
+if(container){
+    const root = createRoot(container);
+    // The main app logic is imperative vanilla JS, so we render a placeholder.
 }
