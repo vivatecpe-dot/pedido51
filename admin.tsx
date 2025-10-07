@@ -4,8 +4,8 @@ import { createClient, SupabaseClient, RealtimeChannel } from '@supabase/supabas
 
 // --- CONFIGURACIÓN DE SUPABASE ---
 // Reemplaza con la URL y la clave anónima de tu proyecto de Supabase
-const SUPABASE_URL = 'YOUR_SUPABASE_URL'; // Pega tu URL aquí
-const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY'; // Pega tu clave anónima aquí
+const SUPABASE_URL = 'https://zpjnzpcsnxltqocuhdse.supabase.co'; // Pega tu URL aquí
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpwam56cGNzbnhsdHFvY3VoZHNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MzIxMjMsImV4cCI6MjA3NTQwODEyM30.-13qfDagcl0EcshaCIoiB85dKEGaH-ZWDGyToqaL74M'; // Pega tu clave anónima aquí
 
 let supabase: SupabaseClient;
 try {
