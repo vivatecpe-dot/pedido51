@@ -65,7 +65,7 @@ const LoginComponent = () => {
         } catch (err: any) {
             console.error('Login Error Object:', err);
             // Mostramos el mensaje de error real de Supabase
-            setError(err.message || 'Ocurrió un error inesperado.');
+            setError(err.message || 'Ocurrió un error inesperado. Revisa la consola.');
         } finally {
             setLoading(false);
         }

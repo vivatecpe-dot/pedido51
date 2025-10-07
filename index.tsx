@@ -544,13 +544,8 @@ async function handleLoginSubmit(event: Event) {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
-        let displayError = 'Error desconocido.';
-        if (error.message.toLowerCase().includes('invalid login credentials')) {
-            displayError = 'Email o contraseña incorrectos.';
-        } else if (error.message.toLowerCase().includes('email not confirmed')) {
-            displayError = 'Esta cuenta no ha sido confirmada.';
-        }
-        loginErrorEl.textContent = displayError;
+        console.error('Login Error:', error);
+        loginErrorEl.textContent = error.message; // Mostrar siempre el mensaje de error real de Supabase
     } else {
         toggleModal(authModal, false);
         loginForm.reset();
