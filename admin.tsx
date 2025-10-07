@@ -263,7 +263,8 @@ const AdminApp = () => {
                         .eq('id', session.user.id)
                         .single();
 
-                    if (error && status !== 406) { // 406 is "Not a single row"
+                    if (error && status !== 406) {
+                        // This is likely the "querying schema" error due to RLS
                         throw error;
                     }
                     
@@ -271,12 +272,13 @@ const AdminApp = () => {
                     if (userRole && ['admin', 'vendedor', 'delivery'].includes(userRole)) {
                         setIsAuthorized(true);
                     } else {
-                        setAuthError("No tienes permiso para acceder a este panel.");
+                        // User exists but has wrong role, or no profile entry found (status 406)
+                        setAuthError("No tienes los permisos necesarios para acceder a este panel.");
                         await supabase.auth.signOut();
                     }
                 } catch (err: any) {
                     console.error("Admin permission check failed:", err);
-                    setAuthError("Error al verificar permisos. Contacte a soporte (RLS).");
+                    setAuthError("Error al leer perfil. Revise las políticas de 'Row Level Security' (RLS) en Supabase.");
                     await supabase.auth.signOut();
                 }
             }
