@@ -65,6 +65,10 @@ const LoginComponent = ({ initialError }: { initialError?: string | null }) => {
             });
 
             if (signInError) {
+                // Translate common error message for better UX
+                if (signInError.message === 'Invalid login credentials') {
+                    throw new Error('Email o contraseña incorrectos.');
+                }
                 throw signInError;
             }
             // onAuthStateChange se encargará de la verificación de rol y de renderizar el dashboard.
@@ -278,7 +282,7 @@ const AdminApp = () => {
                     }
                 } catch (err: any) {
                     console.error("Admin permission check failed:", err);
-                    setAuthError("Error al leer perfil. Revise las políticas de 'Row Level Security' (RLS) en Supabase.");
+                    setAuthError("Error de Permiso. No se pudo verificar tu rol. Revisa la política 'Row Level Security' (RLS) de tu tabla 'profiles' en Supabase.");
                     await supabase.auth.signOut();
                 }
             }

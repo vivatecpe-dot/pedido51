@@ -576,7 +576,7 @@ async function handleLoginSubmit(event: Event) {
             if (profileError) {
                 // This is the "Database error querying schema" scenario.
                 console.error('Database error querying profile after login:', profileError);
-                loginErrorEl.textContent = 'Login correcto, pero no se pudo leer su perfil. Por favor, revise las políticas de "Row Level Security" (RLS) en su tabla "profiles" de Supabase.';
+                loginErrorEl.textContent = 'Error de Permiso. El ingreso fue exitoso, pero no se pudo leer tu perfil. Revisa la política "Row Level Security" (RLS) de tu tabla "profiles" en Supabase.';
                 // Sign the user out to prevent a broken, half-logged-in state.
                 await supabase.auth.signOut();
                 return; // Stay in the modal to show the error.
