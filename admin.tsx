@@ -51,18 +51,24 @@ const LoginComponent = () => {
         setLoading(true);
         setError(null);
 
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-        });
+        try {
+            const { error: signInError } = await supabase.auth.signInWithPassword({
+                email,
+                password,
+            });
 
-        if (signInError) {
-            console.error('Supabase Login Error:', signInError);
-            // **MEJORA CLAVE:** Mostrar el mensaje de error real de Supabase.
-            setError(signInError.message || 'Ocurrió un error inesperado.');
+            if (signInError) {
+                // Lanzamos el error para que sea capturado por el bloque catch
+                throw signInError;
+            }
+            // Si no hay error, el onAuthStateChange se encargará de redirigir.
+        } catch (err: any) {
+            console.error('Login Error Object:', err);
+            // Mostramos el mensaje de error real de Supabase
+            setError(err.message || 'Ocurrió un error inesperado.');
+        } finally {
+            setLoading(false);
         }
-        // El onAuthStateChange se encargará del resto si el login es exitoso.
-        setLoading(false);
     };
 
     return (
