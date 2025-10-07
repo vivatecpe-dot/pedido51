@@ -7,6 +7,7 @@ type Product = {
   description: string;
   price: number;
   image: string;
+  isMostOrdered?: boolean;
 };
 
 type Category = {
@@ -20,14 +21,27 @@ type CartItem = Product & {
   quantity: number;
 };
 
+type Promo = {
+    id: number;
+    title: string;
+    description: string;
+    image: string;
+}
+
 // --- DATA ---
+const promosData: Promo[] = [
+    { id: 1, title: 'Combo Clásico', description: 'Hamburguesa + Papas + Bebida', image: 'https://images.unsplash.com/photo-1596662951482-0c4ba74a6df6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80'},
+    { id: 2, title: '2x1 en Milkshakes', description: 'Todos los martes y jueves', image: 'https://images.unsplash.com/photo-1600718374662-0483d2b9da44?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80'},
+    { id: 3, title: 'Noche de Alitas', description: 'Porción de alitas + Cerveza', image: 'https://images.unsplash.com/photo-1567620832903-9fc6debc209f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80'},
+];
+
 const menuData: Category[] = [
     {
       id: 'hamburguesas',
       name: 'Hamburguesas',
       icon: '🍔',
       products: [
-        { id: 1, name: 'Hamburguesa Clásica', description: 'Carne 100% res, queso cheddar, lechuga, tomate, cebolla y mayonesa especial.', price: 15.00, image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80' },
+        { id: 1, name: 'Hamburguesa Clásica', description: 'Carne 100% res, queso cheddar, lechuga, tomate, cebolla y mayonesa especial.', price: 15.00, image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80', isMostOrdered: true },
         { id: 2, name: 'Hamburguesa Doble Queso', description: 'Dos medallones de carne jugosa con doble queso cheddar y salsa de la casa.', price: 20.00, image: 'https://images.unsplash.com/photo-1603771553223-4cf0483833b3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80' },
         { id: 3, name: 'Hamburguesa BBQ', description: 'Carne a la parrilla, tocino, queso, cebolla caramelizada y salsa BBQ.', price: 18.00, image: 'https://images.unsplash.com/photo-1550547660-d9450f859349?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80' },
         { id: 4, name: 'Hamburguesa de Pollo Crispy', description: 'Filete de pollo empanizado, lechuga, tomate y mayonesa con toque de ajo.', price: 16.00, image: 'https://images.unsplash.com/photo-1562967914-608f82629710?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80' },
@@ -38,7 +52,7 @@ const menuData: Category[] = [
       name: 'Acompañamientos',
       icon: '🍟',
       products: [
-        { id: 5, name: 'Papas Fritas Clásicas', description: 'Papas naturales crocantes, servidas con ketchup o mayonesa.', price: 7.00, image: 'https://images.unsplash.com/photo-1598679253544-2c9740680140?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80' },
+        { id: 5, name: 'Papas Fritas Clásicas', description: 'Papas naturales crocantes, servidas con ketchup o mayonesa.', price: 7.00, image: 'https://images.unsplash.com/photo-1598679253544-2c9740680140?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80', isMostOrdered: true },
         { id: 6, name: 'Aros de Cebolla', description: 'Cebollas empanizadas y fritas, servidas con salsa tártara.', price: 8.00, image: 'https://images.unsplash.com/photo-1549849171-0761e702c270?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80' },
         { id: 7, name: 'Nuggets de Pollo', description: 'Trozos de pollo empanizado acompañados de salsas.', price: 9.00, image: 'https://images.unsplash.com/photo-1626082912437-b615a1a1b1d8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80' },
       ],
@@ -50,7 +64,7 @@ const menuData: Category[] = [
       products: [
         { id: 8, name: 'Gaseosas Personales', description: 'Inca Kola, Coca-Cola, Pepsi, disponibles frías.', price: 5.00, image: 'https://images.unsplash.com/photo-1554866585-cd94860890b7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80' },
         { id: 9, name: 'Jugos Naturales', description: 'De frutas peruanas: maracuyá, piña, fresa, mango o limón.', price: 8.00, image: 'https://images.unsplash.com/photo-1506802963788-5235b3174579?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80' },
-        { id: 10, name: 'Milkshakes', description: 'Vainilla, chocolate, fresa o galleta Oreo.', price: 12.00, image: 'https://images.unsplash.com/photo-1572490122747-3968b75cc699?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80' },
+        { id: 10, name: 'Milkshakes', description: 'Vainilla, chocolate, fresa o galleta Oreo.', price: 12.00, image: 'https://images.unsplash.com/photo-1572490122747-3968b75cc699?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80', isMostOrdered: true },
       ],
     },
      {
@@ -68,12 +82,21 @@ const menuData: Category[] = [
 let state: {
   selectedCategory: string;
   cart: CartItem[];
+  currentView: 'home' | 'products';
 } = {
   selectedCategory: menuData[0].id,
   cart: [],
+  currentView: 'home',
 };
 
 // --- DOM ELEMENTS ---
+const homeView = document.getElementById('home-view') as HTMLElement;
+const productsView = document.getElementById('products-view') as HTMLElement;
+const promosContainer = document.getElementById('promos-container') as HTMLElement;
+const mostOrderedContainer = document.getElementById('most-ordered-container') as HTMLElement;
+const categoriesGridContainer = document.getElementById('categories-grid-container') as HTMLElement;
+const backToHomeBtn = document.getElementById('back-to-home-btn') as HTMLElement;
+const productViewTitle = document.getElementById('product-view-title') as HTMLElement;
 const categoriesContainer = document.getElementById('categories-container') as HTMLElement;
 const productsGrid = document.getElementById('products-grid') as HTMLElement;
 const cartBadgeContainer = document.getElementById('cart-badge-container') as HTMLElement;
@@ -83,17 +106,48 @@ const cartPanel = document.getElementById('cart-panel') as HTMLElement;
 const cartOverlay = document.getElementById('cart-overlay') as HTMLElement;
 const closeCartBtn = document.getElementById('close-cart-btn') as HTMLElement;
 const navCartBtn = document.getElementById('nav-cart') as HTMLElement;
+const navHomeBtn = document.getElementById('nav-home') as HTMLElement;
+
 
 // --- RENDER FUNCTIONS ---
-function renderCategories() {
-  categoriesContainer.innerHTML = '';
-  menuData.forEach(category => {
-    const chip = document.createElement('div');
-    chip.className = `category-chip ${state.selectedCategory === category.id ? 'active' : ''}`;
-    chip.textContent = `${category.icon} ${category.name}`;
-    chip.dataset.categoryId = category.id;
-    categoriesContainer.appendChild(chip);
-  });
+function renderPromos() {
+    promosContainer.innerHTML = promosData.map(promo => `
+        <div class="promo-card">
+            <img src="${promo.image}" alt="${promo.title}" loading="lazy">
+            <div class="overlay">
+                <h3>${promo.title}</h3>
+                <p>${promo.description}</p>
+            </div>
+        </div>
+    `).join('');
+}
+
+function renderMostOrdered() {
+    const mostOrdered = menuData.flatMap(c => c.products).filter(p => p.isMostOrdered);
+    mostOrderedContainer.innerHTML = mostOrdered.map(product => `
+        <div class="most-ordered-card" data-product-id="${product.id}">
+             <img src="${product.image}" alt="${product.name}" loading="lazy">
+             <p class="name">${product.name}</p>
+             <p class="price">S/${product.price.toFixed(2)}</p>
+        </div>
+    `).join('');
+}
+
+function renderCategoryGrid() {
+    categoriesGridContainer.innerHTML = menuData.map(category => `
+        <div class="category-card" data-category-id="${category.id}">
+            <div class="icon">${category.icon}</div>
+            <div class="name">${category.name}</div>
+        </div>
+    `).join('');
+}
+
+function renderCategoriesFilter() {
+  categoriesContainer.innerHTML = menuData.map(category => `
+    <div class="category-chip ${state.selectedCategory === category.id ? 'active' : ''}" data-category-id="${category.id}">
+      ${category.name}
+    </div>
+  `).join('');
 }
 
 function renderProducts() {
@@ -101,8 +155,8 @@ function renderProducts() {
   const category = menuData.find(c => c.id === state.selectedCategory);
   if (!category) return;
 
-  category.products.forEach(product => {
-    productsGrid.innerHTML += `
+  productViewTitle.textContent = category.name;
+  productsGrid.innerHTML = category.products.map(product => `
       <div class="product-card" data-product-id="${product.id}">
           <h3 class="product-name">${product.name}</h3>
           <div class="product-image">
@@ -113,8 +167,7 @@ function renderProducts() {
             <button class="add-to-cart-btn" data-product-id="${product.id}">+</button>
           </div>
       </div>
-    `;
-  });
+    `).join('');
 }
 
 function renderCart() {
@@ -151,8 +204,34 @@ function updateCartBadge() {
   }
 }
 
-// --- EVENT HANDLERS & LOGIC ---
+// --- VIEW MANAGEMENT ---
+function renderApp() {
+    if (state.currentView === 'home') {
+        homeView.classList.add('active');
+        productsView.classList.remove('active');
+        renderHomeScreen();
+    } else {
+        homeView.classList.remove('active');
+        productsView.classList.add('active');
+        renderProductsScreen();
+    }
+    // Cart is always rendered to keep it updated
+    renderCart();
+}
 
+function renderHomeScreen() {
+    renderPromos();
+    renderMostOrdered();
+    renderCategoryGrid();
+}
+
+function renderProductsScreen() {
+    renderCategoriesFilter();
+    renderProducts();
+}
+
+
+// --- EVENT HANDLERS & LOGIC ---
 function addToCart(productId: number) {
   const existingItem = state.cart.find(item => item.id === productId);
 
@@ -182,13 +261,22 @@ function updateQuantity(productId: number, action: 'increase' | 'decrease') {
     renderCart();
 }
 
+function handleCategoryGridClick(event: Event) {
+    const target = event.target as HTMLElement;
+    const card = target.closest('.category-card');
+    if (card instanceof HTMLElement && card.dataset.categoryId) {
+        state.selectedCategory = card.dataset.categoryId;
+        state.currentView = 'products';
+        renderApp();
+    }
+}
 
-function handleCategoryClick(event: Event) {
+function handleCategoryFilterClick(event: Event) {
     const target = event.target as HTMLElement;
     const chip = target.closest('.category-chip');
     if (chip instanceof HTMLElement && chip.dataset.categoryId) {
         state.selectedCategory = chip.dataset.categoryId;
-        render();
+        renderProductsScreen();
     }
 }
 
@@ -213,26 +301,31 @@ function handleCartItemsClick(event: Event) {
     }
 }
 
+function handleGoHome() {
+    state.currentView = 'home';
+    renderApp();
+}
+
 function toggleCart(visible: boolean) {
     cartPanel.classList.toggle('visible', visible);
     cartOverlay.classList.toggle('visible', visible);
 }
 
 // --- INITIALIZATION ---
-function render() {
-  renderCategories();
-  renderProducts();
-  renderCart();
-}
-
 function init() {
-  categoriesContainer.addEventListener('click', handleCategoryClick);
+  categoriesGridContainer.addEventListener('click', handleCategoryGridClick);
+  categoriesContainer.addEventListener('click', handleCategoryFilterClick);
   productsGrid.addEventListener('click', handleProductGridClick);
   cartItemsContainer.addEventListener('click', handleCartItemsClick);
+  
   navCartBtn.addEventListener('click', () => toggleCart(true));
   closeCartBtn.addEventListener('click', () => toggleCart(false));
   cartOverlay.addEventListener('click', () => toggleCart(false));
-  render();
+
+  backToHomeBtn.addEventListener('click', handleGoHome);
+  navHomeBtn.addEventListener('click', handleGoHome);
+
+  renderApp();
 }
 
 init();
@@ -240,11 +333,11 @@ init();
 // React entry point - not used for app logic in this file,
 // but required by the environment setup.
 const App = () => {
-  return <h1>Pedidos51 Loaded</h1>;
+  return null; // The app is rendered with vanilla JS
 };
 
 const container = document.getElementById('app-root');
 if(container){
     const root = createRoot(container);
-    // The main app logic is imperative vanilla JS, so we render a placeholder.
+    root.render(<App />);
 }
