@@ -1,6 +1,68 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 
+// --- ESTRUCTURA DE DATOS PARA SUPABASE ---
+/*
+  Aquí tienes el código SQL para crear las tablas en tu proyecto de Supabase.
+  Puedes ir a "SQL Editor" en tu dashboard de Supabase y ejecutar este script.
+
+  --- TABLAS ---
+
+  1. categorias: Almacena las categorías del menú.
+  2. productos: Contiene cada producto del menú y a qué categoría pertenece.
+  3. pedidos: Guarda la información de cada pedido realizado.
+  4. pedido_items: Una tabla que relaciona los productos con los pedidos.
+
+  --- DATOS NECESARIOS PARA UN PEDIDO ---
+  Al momento de crear un pedido, necesitarás la siguiente información del cliente:
+  - Nombre (customer_name)
+  - Teléfono (customer_phone)
+  - El monto total (total)
+  - Una lista de los productos y sus cantidades (se guardarán en `pedido_items`)
+
+*/
+/*
+-- 1. Tabla de Categorías
+CREATE TABLE categorias (
+  id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  nombre TEXT NOT NULL,
+  icono TEXT
+);
+
+-- 2. Tabla de Productos
+CREATE TABLE productos (
+  id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  nombre TEXT NOT NULL,
+  descripcion TEXT,
+  precio NUMERIC(10, 2) NOT NULL,
+  imagen_url TEXT,
+  es_mas_pedido BOOLEAN DEFAULT FALSE,
+  categoria_id BIGINT REFERENCES categorias(id)
+);
+
+-- 3. Tabla de Pedidos
+-- 'status' puede ser: 'pendiente', 'confirmado', 'en_camino', 'entregado', 'cancelado'
+CREATE TABLE pedidos (
+  id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  nombre_cliente TEXT NOT NULL,
+  telefono_cliente TEXT,
+  total NUMERIC(10, 2) NOT NULL,
+  estado TEXT NOT NULL DEFAULT 'pendiente',
+  fecha_creacion TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 4. Tabla de Items del Pedido (Tabla de unión)
+CREATE TABLE pedido_items (
+  id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  pedido_id BIGINT NOT NULL REFERENCES pedidos(id) ON DELETE CASCADE,
+  producto_id BIGINT NOT NULL REFERENCES productos(id),
+  cantidad INT NOT NULL,
+  precio_unitario NUMERIC(10, 2) NOT NULL
+);
+
+*/
+
+
 type Product = {
   id: number;
   name: string;
@@ -28,7 +90,7 @@ type Promo = {
     image: string;
 }
 
-// --- DATA ---
+// --- DATA (Datos locales de ejemplo) ---
 const promosData: Promo[] = [
     { id: 1, title: 'Combo Clásico', description: 'Hamburguesa + Papas + Bebida', image: 'https://images.unsplash.com/photo-1596662951482-0c4ba74a6df6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80'},
     { id: 2, title: '2x1 en Milkshakes', description: 'Todos los martes y jueves', image: 'https://images.unsplash.com/photo-1600718374662-0483d2b9da44?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80'},

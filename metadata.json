@@ -1,5 +1,5 @@
 {
-  "name": "Pedidos51 - Menú Dinámico y Promociones",
-  "description": "Un sistema de pedidos con una pantalla de inicio dinámica que muestra promociones, productos más pedidos y una navegación por categorías mejorada para una experiencia de usuario atractiva y eficiente.",
+  "name": "Pedidos51 - Sistema de Pedidos en Español",
+  "description": "Sistema de pedidos completo en español, listo para ser integrado con Supabase. Incluye una interfaz moderna, carrito de compras y un flujo de navegación optimizado para móviles y escritorio.",
   "requestFramePermissions": []
 }
