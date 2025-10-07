@@ -340,13 +340,14 @@ function showLoader(visible: boolean) {
 }
 
 // --- SUCCESS & PRINTING ---
-function showSuccessScreen(orderNumber: string, customerName: string, cart: CartItem[], total: number) {
+function showSuccessScreen(orderNumber: string, customerName: string, customerAddress: string, cart: CartItem[], total: number) {
     const successSummaryContainer = document.getElementById('success-order-summary') as HTMLElement;
     const printableTicketContainer = document.getElementById('printable-ticket') as HTMLElement;
 
     const summaryHtml = `
         <h4>Pedido: ${orderNumber}</h4>
-        <p>Cliente: ${customerName}</p>
+        <p><strong>Cliente:</strong> ${customerName}</p>
+        <p><strong>Dirección:</strong> ${customerAddress}</p>
         <hr>
         ${cart.map(item => `
             <div class="summary-item">
@@ -369,6 +370,7 @@ function showSuccessScreen(orderNumber: string, customerName: string, cart: Cart
             <hr class="ticket-divider">
             <p><strong>Pedido: ${orderNumber}</strong></p>
             <p>Cliente: ${customerName}</p>
+            <p>Dirección: ${customerAddress}</p>
         </div>
         <hr class="ticket-divider">
         <div class="ticket-items">
@@ -464,9 +466,10 @@ async function handleCheckoutSubmit(event: Event) {
     const formData = new FormData(checkoutForm);
     const customerName = formData.get('name') as string;
     const customerPhone = formData.get('phone') as string;
+    const customerAddress = formData.get('address') as string;
 
-    if (!customerName.trim() || !customerPhone.trim()) {
-        alert("Por favor, completa tu nombre y teléfono.");
+    if (!customerName.trim() || !customerPhone.trim() || !customerAddress.trim()) {
+        alert("Por favor, completa todos los campos.");
         return;
     }
 
@@ -480,6 +483,7 @@ async function handleCheckoutSubmit(event: Event) {
             .insert({
                 nombre_cliente: customerName,
                 telefono_cliente: customerPhone,
+                direccion: customerAddress,
                 total: total
             })
             .select()
@@ -506,9 +510,10 @@ async function handleCheckoutSubmit(event: Event) {
         // Éxito
         toggleModal(checkoutModal, false);
         toggleCart(false);
-        showSuccessScreen(orderNumber, customerName, state.cart, total);
+        showSuccessScreen(orderNumber, customerName, customerAddress, state.cart, total);
         state.cart = []; // Limpiar carrito
         renderCart();
+        checkoutForm.reset(); // Limpiar el formulario
 
     } catch (error) {
         console.error("Error al enviar el pedido:", error);
