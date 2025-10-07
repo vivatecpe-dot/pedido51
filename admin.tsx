@@ -237,38 +237,40 @@ const Dashboard = ({ user }: { user: User }) => {
 };
 
 
-// --- COMPONENTE PRINCIPAL ---
+// --- COMPONENTE PRINCIPAL (REFACTORIZADO) ---
 const AdminApp = () => {
     const [session, setSession] = useState<Session | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchSession = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            setSession(session);
-            setLoading(false);
-        };
-
-        fetchSession();
-
+        // onAuthStateChange se dispara inmediatamente con el estado de la sesión inicial
+        // y luego escucha los cambios de inicio/cierre de sesión.
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             setSession(session);
+            setLoading(false); // Una vez que tenemos el estado, dejamos de cargar.
         });
 
-        return () => subscription.unsubscribe();
+        // Limpiamos la suscripción cuando el componente se desmonta.
+        return () => {
+            subscription.unsubscribe();
+        };
     }, []);
 
     if (!supabase) {
         return <div>Error: Supabase no se pudo inicializar.</div>;
     }
 
+    // Mostramos un cargador mientras se verifica la sesión inicial.
     if (loading) {
         return <div className="loader">Verificando sesión...</div>;
     }
 
+    // Si no hay sesión, mostramos el componente de Login.
     if (!session) {
         return <LoginComponent />;
-    } else {
+    } 
+    // Si hay una sesión, mostramos el Dashboard.
+    else {
         return <Dashboard user={session.user} />;
     }
 };
