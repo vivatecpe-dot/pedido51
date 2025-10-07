@@ -19,6 +19,7 @@
       --grey: #9E9E9E;
       --light-grey: #EEEEEE;
       --success-color: #4CAF50;
+      --error-color: #F44336;
       --font-family: 'Poppins', sans-serif;
       --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
       --border-radius: 16px;
@@ -62,10 +63,14 @@
     /* --- Home View --- */
     .home-header {
       padding-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
     
     .search-bar {
       display: flex;
+      flex-grow: 1;
       align-items: center;
       background-color: var(--white);
       border-radius: 12px;
@@ -86,6 +91,15 @@
       width: 20px;
       height: 20px;
       fill: var(--grey);
+    }
+    #user-display {
+        font-size: 0.8rem;
+        font-weight: 500;
+        margin-left: 1rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100px;
     }
     
     .horizontal-scroll-container {
@@ -248,6 +262,7 @@
     .nav-item {
       cursor: pointer; display: flex; flex-direction: column; align-items: center;
       padding: 0.5rem; color: var(--grey); transition: color 0.2s; position: relative;
+      text-decoration: none;
     }
     .nav-item.active { color: var(--primary-color); }
     .nav-item svg { width: 24px; height: 24px; fill: currentColor; }
@@ -304,12 +319,12 @@
       display: flex; justify-content: space-between; font-size: 1.2rem;
       font-weight: 600; margin-bottom: 1rem;
     }
-    .checkout-btn {
+    .checkout-btn, .primary-btn {
       width: 100%; padding: 1rem; font-size: 1rem; font-weight: 600;
       background-color: var(--primary-color); color: var(--white);
       border: none; border-radius: 12px; cursor: pointer; transition: opacity 0.2s;
     }
-    .checkout-btn:hover { opacity: 0.85; }
+    .checkout-btn:hover, .primary-btn:hover { opacity: 0.85; }
     
     /* --- Modals & Loaders --- */
     .modal-overlay {
@@ -341,6 +356,8 @@
       resize: vertical;
     }
     .modal-actions { margin-top: 1.5rem; }
+    .error-message { color: var(--error-color); margin-top: 1rem; min-height: 20px; text-align: center; }
+
     #success-modal .modal { text-align: center; }
     #success-modal .icon { font-size: 4rem; color: var(--success-color); }
     #success-modal h2 { margin: 1rem 0 0.5rem 0; font-size: 1.5rem; }
@@ -400,6 +417,32 @@
         display: flex;
         justify-content: space-between;
     }
+    
+    /* Auth Modal */
+    .auth-tabs {
+        display: flex;
+        border-bottom: 1px solid var(--light-grey);
+        margin-bottom: 1.5rem;
+    }
+    .auth-tab {
+        flex: 1;
+        padding: 0.75rem;
+        text-align: center;
+        background: none;
+        border: none;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        color: var(--grey);
+        border-bottom: 3px solid transparent;
+        transition: all 0.2s;
+    }
+    .auth-tab.active {
+        color: var(--primary-color);
+        border-bottom-color: var(--primary-color);
+    }
+    .auth-form { display: none; }
+    .auth-form.active { display: block; }
 
     #loader-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -529,6 +572,7 @@
           <input type="text" placeholder="Buscar comida...">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z"/></svg>
         </div>
+        <div id="user-display"></div>
       </header>
       <main>
         <section id="promos-section">
@@ -570,7 +614,10 @@
     </div>
     <div class="nav-item" id="nav-cart">
       <div id="cart-badge-container"></div>
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path d="M0 24C0 10.7 10.7 0 24 0H69.5c22 0 41.5 12.8 50.6 32h411c26.3 0 45.5 25 38.6 50.4l-41 152.3c-8.5 31.4-37 53.3-69.5 53.3H170.7l5.4 28.5c2.2 11.3 12.1 19.5 23.6 19.5H488c13.3 0 24 10.7 24 24s-10.7 24-24 24H199.7c-34.6 0-64.3-24.6-70.7-58.5L77.4 54.5c-.7-3.8-4-6.5-7.9-6.5H24C10.7 48 0 37.3 0 24zM128 464a48 48 0 1 1 96 0 48 48 0 1 1 -96 0zm336-48a48 48 0 1 1 0 96 48 48 0 1 1 0-96z"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path d="M0 24C0 10.7 10.7 0 24 0H69.5c22 0 41.5 12.8 50.6 32h411c26.3 0 45.5 25 38.6 50.4l-41 152.3c-8.5 31.4-37 53.3-69.5 53.3H170.7l5.4 28.5c2.2 11.3 12.1 19.5 23.6 19.5H488c13.3 0 24 10.7 24 24s-10.7 24-24 24H199.7c-34.6 0-64.3-24.6-70.7-58.5L77.4 54.5c-.7-3.8-4-6.5-7.9-6.5H24C10.7 48 0 37.3 0 24zM128 464a48 48 0 1 1 96 0 48 48 0 1 1 -96 0zm336-48a48 48 0 1 1 0 96 48 48 0 1 1 0 -96z"/></svg>
+    </div>
+    <div class="nav-item" id="nav-user">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512H418.3c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304H178.3z"/></svg>
     </div>
   </nav>
 
@@ -632,6 +679,58 @@
           </div>
       </div>
   </div>
+  
+  <!-- Auth Modal -->
+  <div id="auth-modal" class="modal-overlay">
+      <div class="modal">
+          <div class="modal-header">
+              <h2 id="auth-modal-title">Acceso</h2>
+              <button class="modal-close-btn" id="close-auth-modal-btn">&times;</button>
+          </div>
+          <div class="auth-tabs">
+              <button id="login-tab-btn" class="auth-tab active">Ingresar</button>
+              <button id="signup-tab-btn" class="auth-tab">Registrarse</button>
+          </div>
+          
+          <!-- Login Form -->
+          <form id="login-form" class="auth-form active">
+              <div class="form-group">
+                  <label for="login-email">Email</label>
+                  <input type="email" id="login-email" name="email" required>
+              </div>
+              <div class="form-group">
+                  <label for="login-password">Contraseña</label>
+                  <input type="password" id="login-password" name="password" required>
+              </div>
+              <div class="modal-actions">
+                  <button type="submit" class="primary-btn">Ingresar</button>
+              </div>
+              <p class="error-message" id="login-error"></p>
+          </form>
+
+          <!-- Signup Form -->
+          <form id="signup-form" class="auth-form">
+              <div class="form-group">
+                  <label for="signup-name">Nombre Completo</label>
+                  <input type="text" id="signup-name" name="name" required>
+              </div>
+              <div class="form-group">
+                  <label for="signup-email">Email</label>
+                  <input type="email" id="signup-email" name="email" required>
+              </div>
+              <div class="form-group">
+                  <label for="signup-password">Contraseña</label>
+                  <input type="password" id="signup-password" name="password" minlength="6" required>
+              </div>
+              <div class="modal-actions">
+                  <button type="submit" class="primary-btn">Crear Cuenta</button>
+              </div>
+              <p class="error-message" id="signup-error"></p>
+          </form>
+
+      </div>
+  </div>
+
 
   <div id="printable-ticket" aria-hidden="true"></div>
 

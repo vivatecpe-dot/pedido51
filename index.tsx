@@ -1,19 +1,14 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient, User, Session } from '@supabase/supabase-js';
 
 // --- CONFIGURACIÓN DE SUPABASE ---
-// Reemplaza con la URL y la clave anónima de tu proyecto de Supabase
-const SUPABASE_URL = 'https://zpjnzpcsnxltqocuhdse.supabase.co'; // Pega tu URL aquí
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpwam56cGNzbnhsdHFvY3VoZHNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MzIxMjMsImV4cCI6MjA3NTQwODEyM30.-13qfDagcl0EcshaCIoiB85dKEGaH-ZWDGyToqaL74M'; // Pega tu clave anónima aquí
+const SUPABASE_URL = 'https://zpjnzpcsnxltqocuhdse.supabase.co'; 
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpwam56cGNzbnhsdHFvY3VoZHNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MzIxMjMsImV4cCI6MjA3NTQwODEyM30.-13qfDagcl0EcshaCIoiB85dKEGaH-ZWDGyToqaL74M';
 
 let supabase: SupabaseClient;
 try {
-    if (!SUPABASE_URL.includes('YOUR_SUPABASE') && !SUPABASE_ANON_KEY.includes('YOUR_SUPABASE')) {
-        supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    } else {
-        console.warn("Supabase no configurado. Mostrando datos de ejemplo.");
-    }
+    supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 } catch (error) {
     console.error("Error inicializando Supabase:", error);
 }
@@ -39,68 +34,26 @@ type CartItem = Product & {
   quantity: number;
 };
 
-type Promo = {
-    id: number;
-    title: string;
-    description: string;
-    image: string;
-}
-
-// --- DATOS LOCALES DE EJEMPLO (si Supabase falla) ---
-const localPromosData: Promo[] = [
-    { id: 1, title: 'Combo Clásico', description: 'Hamburguesa + Papas + Bebida', image: 'https://images.unsplash.com/photo-1596662951482-0c4ba74a6df6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80'},
-];
-const localMenuData: Category[] = [
-    {
-        id: 1,
-        name: 'Hamburguesas',
-        icon: '🍔',
-        products: [
-            { id: 101, name: 'Clásica', description: 'Carne, lechuga, tomate', price: 15.50, image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=60', isMostOrdered: true },
-            { id: 102, name: 'Doble Queso', description: 'Doble carne, doble queso', price: 22.00, image: 'https://images.unsplash.com/photo-1603064752734-4b42eff72dca?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=60', isMostOrdered: false },
-            { id: 103, name: 'Criolla', description: 'Con Huevo y Plátano', price: 20.00, image: 'https://images.unsplash.com/photo-1551782450-a2132b4ba21d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=60', isMostOrdered: false },
-        ]
-    },
-    {
-        id: 2,
-        name: 'Pizzas',
-        icon: '🍕',
-        products: [
-            { id: 201, name: 'Margarita', description: 'Salsa, mozzarella, albahaca', price: 25.00, image: 'https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=60', isMostOrdered: false },
-            { id: 202, name: 'Pepperoni', description: 'Clásica de pepperoni', price: 30.00, image: 'https://images.unsplash.com/photo-1534308983496-4fabb1a015ee?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=60', isMostOrdered: true },
-        ]
-    },
-    {
-        id: 3,
-        name: 'Bebidas',
-        icon: '🥤',
-        products: [
-            { id: 301, name: 'Gaseosa', description: 'Botella de 500ml', price: 5.00, image: 'https://images.unsplash.com/photo-1554866585-cd94860890b7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=60', isMostOrdered: false },
-            { id: 302, name: 'Jugo Natural', description: 'Jugo de frutas de estación', price: 8.00, image: 'https://images.unsplash.com/photo-1600271886742-f049cd451bba?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=60', isMostOrdered: true },
-        ]
-    },
-     {
-        id: 4,
-        name: 'Postres',
-        icon: '🍰',
-        products: [
-            { id: 401, name: 'Torta de Chocolate', description: 'Tajada de torta húmeda', price: 12.00, image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=60', isMostOrdered: true },
-        ]
-    }
-];
-let menuData: Category[] = [];
-let promosData: Promo[] = localPromosData;
+type Profile = {
+    role: 'admin' | 'vendedor' | 'delivery' | null;
+    full_name: string | null;
+};
 
 // --- STATE ---
 let state: {
   selectedCategoryId: number;
   cart: CartItem[];
   currentView: 'home' | 'products';
+  user: User | null;
+  profile: Profile | null;
 } = {
   selectedCategoryId: 0,
   cart: [],
   currentView: 'home',
+  user: null,
+  profile: null,
 };
+let menuData: Category[] = [];
 
 // --- DOM ELEMENTS ---
 const loaderOverlay = document.getElementById('loader-overlay') as HTMLElement;
@@ -121,17 +74,35 @@ const cartOverlay = document.getElementById('cart-overlay') as HTMLElement;
 const closeCartBtn = document.getElementById('close-cart-btn') as HTMLElement;
 const navCartBtn = document.getElementById('nav-cart') as HTMLElement;
 const navHomeBtn = document.getElementById('nav-home') as HTMLElement;
+const navUserBtn = document.getElementById('nav-user') as HTMLElement;
+const userDisplay = document.getElementById('user-display') as HTMLElement;
 const checkoutBtn = document.getElementById('checkout-btn') as HTMLElement;
+// Modals
 const checkoutModal = document.getElementById('checkout-modal') as HTMLElement;
 const closeCheckoutModalBtn = document.getElementById('close-checkout-modal-btn') as HTMLElement;
-const checkoutForm = document.getElementById('checkout-form') as HTMLFormElement;
 const successModal = document.getElementById('success-modal') as HTMLElement;
 const closeSuccessModalBtn = document.getElementById('close-success-modal-btn') as HTMLElement;
+const authModal = document.getElementById('auth-modal') as HTMLElement;
+const closeAuthModalBtn = document.getElementById('close-auth-modal-btn') as HTMLElement;
+// Forms
+const checkoutForm = document.getElementById('checkout-form') as HTMLFormElement;
+const loginForm = document.getElementById('login-form') as HTMLFormElement;
+const signupForm = document.getElementById('signup-form') as HTMLFormElement;
+// Auth UI
+const loginTabBtn = document.getElementById('login-tab-btn') as HTMLButtonElement;
+const signupTabBtn = document.getElementById('signup-tab-btn') as HTMLButtonElement;
+const loginErrorEl = document.getElementById('login-error') as HTMLParagraphElement;
+const signupErrorEl = document.getElementById('signup-error') as HTMLParagraphElement;
+// Ticket
 const printTicketBtn = document.getElementById('print-ticket-btn') as HTMLElement;
 
 
 // --- RENDER FUNCTIONS ---
 function renderPromos() {
+    // Dummy data for now
+    const promosData = [
+        { id: 1, title: 'Combo Clásico', description: 'Hamburguesa + Papas + Bebida', image: 'https://images.unsplash.com/photo-1596662951482-0c4ba74a6df6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80'},
+    ];
     promosContainer.innerHTML = promosData.map(promo => `
         <div class="promo-card">
             <img src="${promo.image}" alt="${promo.title}" loading="lazy">
@@ -237,6 +208,7 @@ function renderApp() {
         renderProductsScreen();
     }
     renderCart();
+    updateUserUI();
 }
 
 function renderHomeScreen() {
@@ -409,36 +381,31 @@ function showSuccessScreen(orderNumber: string, customerName: string, customerAd
 }
 
 
-// --- SUPABASE FUNCTIONS ---
+// --- SUPABASE DATA FUNCTIONS ---
 async function fetchMenuData() {
     showLoader(true);
     try {
-        if (supabase) {
-            const { data: categoriesData, error: categoriesError } = await supabase.from('categorias').select('*');
-            if (categoriesError) throw categoriesError;
+        const { data: categoriesData, error: categoriesError } = await supabase.from('categorias').select('*');
+        if (categoriesError) throw categoriesError;
 
-            const { data: productsData, error: productsError } = await supabase.from('productos').select('*');
-            if (productsError) throw productsError;
+        const { data: productsData, error: productsError } = await supabase.from('productos').select('*');
+        if (productsError) throw productsError;
 
-            menuData = categoriesData.map(category => ({
-                id: category.id,
-                name: category.nombre,
-                icon: category.icono,
-                products: productsData
-                    .filter(p => p.categoria_id === category.id)
-                    .map(p => ({
-                        id: p.id,
-                        name: p.nombre,
-                        description: p.descripcion,
-                        price: p.precio,
-                        image: p.imagen_url,
-                        isMostOrdered: p.es_mas_pedido
-                    }))
-            }));
-        } else {
-             console.log("Supabase no está configurado, usando datos locales.");
-             menuData = localMenuData;
-        }
+        menuData = categoriesData.map(category => ({
+            id: category.id,
+            name: category.nombre,
+            icon: category.icono,
+            products: productsData
+                .filter(p => p.categoria_id === category.id)
+                .map(p => ({
+                    id: p.id,
+                    name: p.nombre,
+                    description: p.descripcion,
+                    price: p.precio,
+                    image: p.imagen_url,
+                    isMostOrdered: p.es_mas_pedido
+                }))
+        }));
         
         if (menuData.length > 0) {
             state.selectedCategoryId = menuData[0].id;
@@ -446,11 +413,7 @@ async function fetchMenuData() {
 
     } catch (error) {
         console.error("Error al cargar el menú desde Supabase:", error);
-        alert("No se pudo cargar el menú. Se mostrarán datos de ejemplo.");
-        menuData = localMenuData; // Fallback to local data
-        if (menuData.length > 0) {
-            state.selectedCategoryId = menuData[0].id;
-        }
+        alert("No se pudo cargar el menú. Revisa la consola para más detalles.");
     } finally {
         showLoader(false);
     }
@@ -458,11 +421,6 @@ async function fetchMenuData() {
 
 async function handleCheckoutSubmit(event: Event) {
     event.preventDefault();
-    if (!supabase) {
-        alert("El sistema de pedidos no está disponible en este momento.");
-        return;
-    }
-
     const formData = new FormData(checkoutForm);
     const customerName = formData.get('name') as string;
     const customerPhone = formData.get('phone') as string;
@@ -477,7 +435,6 @@ async function handleCheckoutSubmit(event: Event) {
     try {
         const total = state.cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-        // 1. Insertar en la tabla 'pedidos'
         const { data: orderData, error: orderError } = await supabase
             .from('pedidos')
             .insert({
@@ -494,7 +451,6 @@ async function handleCheckoutSubmit(event: Event) {
         const orderId = orderData.id;
         const orderNumber = orderData.numero_pedido;
 
-        // 2. Preparar los items del pedido
         const orderItems = state.cart.map(item => ({
             pedido_id: orderId,
             producto_id: item.id,
@@ -502,18 +458,15 @@ async function handleCheckoutSubmit(event: Event) {
             precio_unitario: item.price
         }));
 
-        // 3. Insertar en la tabla 'pedido_items'
         const { error: itemsError } = await supabase.from('pedido_items').insert(orderItems);
-
         if (itemsError) throw itemsError;
 
-        // Éxito
         toggleModal(checkoutModal, false);
         toggleCart(false);
         showSuccessScreen(orderNumber, customerName, customerAddress, state.cart, total);
-        state.cart = []; // Limpiar carrito
+        state.cart = [];
         renderCart();
-        checkoutForm.reset(); // Limpiar el formulario
+        checkoutForm.reset();
 
     } catch (error) {
         console.error("Error al enviar el pedido:", error);
@@ -523,11 +476,107 @@ async function handleCheckoutSubmit(event: Event) {
     }
 }
 
+// --- SUPABASE AUTH FUNCTIONS ---
+async function fetchUserProfile(user: User): Promise<Profile | null> {
+    try {
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('role, full_name')
+            .eq('id', user.id)
+            .single();
+        if (error) throw error;
+        return data;
+    } catch (error) {
+        console.error('Error fetching user profile:', error);
+        return null;
+    }
+}
+
+function updateUserUI() {
+    if (state.user && state.profile) {
+        userDisplay.textContent = state.profile.full_name || state.user.email || '';
+        const staffRoles: (Profile['role'])[] = ['admin', 'vendedor', 'delivery'];
+        
+        if (staffRoles.includes(state.profile.role)) {
+            // Convert to an anchor tag to link to admin panel
+            const link = document.createElement('a');
+            link.href = '/admin.html';
+            link.id = 'nav-user';
+            link.className = 'nav-item';
+            link.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M288 32c0-17.7-14.3-32-32-32s-32 14.3-32 32V256c0 17.7 14.3 32 32 32s32-14.3 32-32V32zM143.5 120.5c-13.6-11.3-33.1-9.5-44.5 4.1s-9.5 33.1 4.1 44.5l103.4 86.2c13.6 11.3 33.1 9.5 44.5-4.1s9.5-33.1-4.1-44.5L143.5 120.5zM512 256a256 256 0 1 0-512 0A256 256 0 1 0 512 256zM256 480a224 224 0 1 1 0-448 224 224 0 1 1 0 448z"/></svg>`;
+            navUserBtn.replaceWith(link);
+        } else {
+             // It's a regular user, keep it as a button
+             const button = document.createElement('div');
+             button.id = 'nav-user';
+             button.className = 'nav-item';
+             button.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512H418.3c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304H178.3z"/></svg>`;
+             navUserBtn.replaceWith(button);
+             button.addEventListener('click', () => toggleModal(authModal, true));
+        }
+
+    } else {
+        userDisplay.textContent = '';
+        const button = document.createElement('div');
+        button.id = 'nav-user';
+        button.className = 'nav-item';
+        button.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512H418.3c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304H178.3z"/></svg>`;
+        navUserBtn.replaceWith(button);
+        button.addEventListener('click', () => toggleModal(authModal, true));
+    }
+}
+
+async function handleLoginSubmit(event: Event) {
+    event.preventDefault();
+    loginErrorEl.textContent = '';
+    const formData = new FormData(loginForm);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (error) {
+        loginErrorEl.textContent = 'Email o contraseña incorrectos.';
+    } else {
+        toggleModal(authModal, false);
+        loginForm.reset();
+    }
+}
+
+async function handleSignupSubmit(event: Event) {
+    event.preventDefault();
+    signupErrorEl.textContent = '';
+    const formData = new FormData(signupForm);
+    const fullName = formData.get('name') as string;
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+
+    const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+            data: {
+                full_name: fullName,
+            }
+        }
+    });
+
+    if (error) {
+        signupErrorEl.textContent = 'No se pudo crear la cuenta. Inténtalo de nuevo.';
+    } else {
+        alert('¡Cuenta creada! Ya puedes iniciar sesión.');
+        // Switch to login tab automatically
+        loginTabBtn.click();
+        signupForm.reset();
+    }
+}
+
 
 // --- INITIALIZATION ---
 async function init() {
   await fetchMenuData();
   
+  // Event Listeners
   categoriesGridContainer.addEventListener('click', handleCategoryGridClick);
   categoriesContainer.addEventListener('click', handleCategoryFilterClick);
   productsGrid.addEventListener('click', handleProductGridClick);
@@ -551,24 +600,47 @@ async function init() {
     toggleModal(successModal, false);
     handleGoHome();
   });
-  printTicketBtn.addEventListener('click', () => {
-    window.print();
-  });
-
+  printTicketBtn.addEventListener('click', () => window.print());
 
   backToHomeBtn.addEventListener('click', handleGoHome);
   navHomeBtn.addEventListener('click', handleGoHome);
+  navUserBtn.addEventListener('click', () => toggleModal(authModal, true));
+
+  // Auth Modal Listeners
+  closeAuthModalBtn.addEventListener('click', () => toggleModal(authModal, false));
+  loginTabBtn.addEventListener('click', () => {
+      loginTabBtn.classList.add('active');
+      signupTabBtn.classList.remove('active');
+      loginForm.classList.add('active');
+      signupForm.classList.remove('active');
+  });
+  signupTabBtn.addEventListener('click', () => {
+      signupTabBtn.classList.add('active');
+      loginTabBtn.classList.remove('active');
+      signupForm.classList.add('active');
+      loginForm.classList.remove('active');
+  });
+  loginForm.addEventListener('submit', handleLoginSubmit);
+  signupForm.addEventListener('submit', handleSignupSubmit);
+
+  // Auth State Listener
+  supabase.auth.onAuthStateChange(async (_event, session: Session | null) => {
+    state.user = session?.user ?? null;
+    if (state.user) {
+        state.profile = await fetchUserProfile(state.user);
+    } else {
+        state.profile = null;
+    }
+    updateUserUI();
+  });
 
   renderApp();
 }
 
 init();
 
-// React entry point - not used for app logic in this file,
-// but required by the environment setup.
-const App = () => {
-  return null; // The app is rendered with vanilla JS
-};
+// React entry point
+const App = () => null; // The app is rendered with vanilla JS
 
 const container = document.getElementById('app-root');
 if(container){
