@@ -61,7 +61,7 @@ const LoginComponent = () => {
             if (error.message.toLowerCase().includes('invalid login credentials')) {
                 displayError = 'Email o contraseña incorrectos. Revisa los datos.';
             } else if (error.message.toLowerCase().includes('email not confirmed')) {
-                displayError = 'La cuenta no ha sido confirmada. Revisa la configuración de "Confirm email" en Supabase.';
+                displayError = "Esta cuenta no está activada. Por favor, ve a Supabase > Authentication > Providers > Email y DESACTIVA la opción 'Confirm email'.";
             } else {
                 displayError = 'Ocurrió un error al intentar ingresar.';
                 console.error('Login Error:', error.message);
@@ -240,11 +240,16 @@ const Dashboard = ({ user }: { user: User }) => {
 // --- COMPONENTE PRINCIPAL ---
 const AdminApp = () => {
     const [session, setSession] = useState<Session | null>(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        supabase.auth.getSession().then(({ data: { session } }) => {
+        const fetchSession = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
             setSession(session);
-        });
+            setLoading(false);
+        };
+
+        fetchSession();
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             setSession(session);
@@ -255,6 +260,10 @@ const AdminApp = () => {
 
     if (!supabase) {
         return <div>Error: Supabase no se pudo inicializar.</div>;
+    }
+
+    if (loading) {
+        return <div className="loader">Verificando sesión...</div>;
     }
 
     if (!session) {
