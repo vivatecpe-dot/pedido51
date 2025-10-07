@@ -282,7 +282,7 @@ const AdminApp = () => {
                     }
                 } catch (err: any) {
                     console.error("Admin permission check failed:", err);
-                    setAuthError("Error de Permiso. No se pudo verificar tu rol. Revisa la política 'Row Level Security' (RLS) de tu tabla 'profiles' en Supabase.");
+                    setAuthError("Error de Permisos (RLS): No se pudo verificar tu rol. Revisa la política de seguridad (RLS) de la tabla 'profiles' en Supabase.");
                     await supabase.auth.signOut();
                 }
             }

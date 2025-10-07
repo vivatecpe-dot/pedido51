@@ -559,7 +559,12 @@ async function handleLoginSubmit(event: Event) {
 
     if (signInError) {
         console.error('Login Error:', signInError);
-        loginErrorEl.textContent = signInError.message;
+        // Translate common error for better UX
+        if (signInError.message === 'Invalid login credentials') {
+            loginErrorEl.textContent = 'Email o contraseña incorrectos.';
+        } else {
+            loginErrorEl.textContent = 'Error al iniciar sesión.';
+        }
         return;
     }
 
@@ -576,7 +581,7 @@ async function handleLoginSubmit(event: Event) {
             if (profileError) {
                 // This is the "Database error querying schema" scenario.
                 console.error('Database error querying profile after login:', profileError);
-                loginErrorEl.textContent = 'Error de Permiso. El ingreso fue exitoso, pero no se pudo leer tu perfil. Revisa la política "Row Level Security" (RLS) de tu tabla "profiles" en Supabase.';
+                loginErrorEl.textContent = 'Error de Permisos (RLS). Login correcto, pero no se pudo leer tu perfil. Revisa la configuración de seguridad en tu tabla "profiles" de Supabase.';
                 // Sign the user out to prevent a broken, half-logged-in state.
                 await supabase.auth.signOut();
                 return; // Stay in the modal to show the error.
