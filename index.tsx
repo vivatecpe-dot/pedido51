@@ -1,68 +1,24 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-// --- ESTRUCTURA DE DATOS PARA SUPABASE ---
-/*
-  Aquí tienes el código SQL para crear las tablas en tu proyecto de Supabase.
-  Puedes ir a "SQL Editor" en tu dashboard de Supabase y ejecutar este script.
+// --- CONFIGURACIÓN DE SUPABASE ---
+// Reemplaza con la URL y la clave anónima de tu proyecto de Supabase
+const SUPABASE_URL = 'YOUR_SUPABASE_URL'; // Pega tu URL aquí
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY'; // Pega tu clave anónima aquí
 
-  --- TABLAS ---
+let supabase: SupabaseClient;
+try {
+    if (!SUPABASE_URL.includes('YOUR_SUPABASE') && !SUPABASE_ANON_KEY.includes('YOUR_SUPABASE')) {
+        supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    } else {
+        console.warn("Supabase no configurado. Mostrando datos de ejemplo.");
+    }
+} catch (error) {
+    console.error("Error inicializando Supabase:", error);
+}
 
-  1. categorias: Almacena las categorías del menú.
-  2. productos: Contiene cada producto del menú y a qué categoría pertenece.
-  3. pedidos: Guarda la información de cada pedido realizado.
-  4. pedido_items: Una tabla que relaciona los productos con los pedidos.
-
-  --- DATOS NECESARIOS PARA UN PEDIDO ---
-  Al momento de crear un pedido, necesitarás la siguiente información del cliente:
-  - Nombre (customer_name)
-  - Teléfono (customer_phone)
-  - El monto total (total)
-  - Una lista de los productos y sus cantidades (se guardarán en `pedido_items`)
-
-*/
-/*
--- 1. Tabla de Categorías
-CREATE TABLE categorias (
-  id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  nombre TEXT NOT NULL,
-  icono TEXT
-);
-
--- 2. Tabla de Productos
-CREATE TABLE productos (
-  id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  nombre TEXT NOT NULL,
-  descripcion TEXT,
-  precio NUMERIC(10, 2) NOT NULL,
-  imagen_url TEXT,
-  es_mas_pedido BOOLEAN DEFAULT FALSE,
-  categoria_id BIGINT REFERENCES categorias(id)
-);
-
--- 3. Tabla de Pedidos
--- 'status' puede ser: 'pendiente', 'confirmado', 'en_camino', 'entregado', 'cancelado'
-CREATE TABLE pedidos (
-  id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  nombre_cliente TEXT NOT NULL,
-  telefono_cliente TEXT,
-  total NUMERIC(10, 2) NOT NULL,
-  estado TEXT NOT NULL DEFAULT 'pendiente',
-  fecha_creacion TIMESTAMPTZ DEFAULT NOW()
-);
-
--- 4. Tabla de Items del Pedido (Tabla de unión)
-CREATE TABLE pedido_items (
-  id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  pedido_id BIGINT NOT NULL REFERENCES pedidos(id) ON DELETE CASCADE,
-  producto_id BIGINT NOT NULL REFERENCES productos(id),
-  cantidad INT NOT NULL,
-  precio_unitario NUMERIC(10, 2) NOT NULL
-);
-
-*/
-
-
+// --- ESTRUCTURA DE DATOS (TIPOS) ---
 type Product = {
   id: number;
   name: string;
@@ -73,7 +29,7 @@ type Product = {
 };
 
 type Category = {
-  id: string;
+  id: number;
   name: string;
   icon: string;
   products: Product[];
@@ -90,68 +46,64 @@ type Promo = {
     image: string;
 }
 
-// --- DATA (Datos locales de ejemplo) ---
-const promosData: Promo[] = [
+// --- DATOS LOCALES DE EJEMPLO (si Supabase falla) ---
+const localPromosData: Promo[] = [
     { id: 1, title: 'Combo Clásico', description: 'Hamburguesa + Papas + Bebida', image: 'https://images.unsplash.com/photo-1596662951482-0c4ba74a6df6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80'},
-    { id: 2, title: '2x1 en Milkshakes', description: 'Todos los martes y jueves', image: 'https://images.unsplash.com/photo-1600718374662-0483d2b9da44?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80'},
-    { id: 3, title: 'Noche de Alitas', description: 'Porción de alitas + Cerveza', image: 'https://images.unsplash.com/photo-1567620832903-9fc6debc209f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80'},
 ];
-
-const menuData: Category[] = [
+const localMenuData: Category[] = [
     {
-      id: 'hamburguesas',
-      name: 'Hamburguesas',
-      icon: '🍔',
-      products: [
-        { id: 1, name: 'Hamburguesa Clásica', description: 'Carne 100% res, queso cheddar, lechuga, tomate, cebolla y mayonesa especial.', price: 15.00, image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80', isMostOrdered: true },
-        { id: 2, name: 'Hamburguesa Doble Queso', description: 'Dos medallones de carne jugosa con doble queso cheddar y salsa de la casa.', price: 20.00, image: 'https://images.unsplash.com/photo-1603771553223-4cf0483833b3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80' },
-        { id: 3, name: 'Hamburguesa BBQ', description: 'Carne a la parrilla, tocino, queso, cebolla caramelizada y salsa BBQ.', price: 18.00, image: 'https://images.unsplash.com/photo-1550547660-d9450f859349?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80' },
-        { id: 4, name: 'Hamburguesa de Pollo Crispy', description: 'Filete de pollo empanizado, lechuga, tomate y mayonesa con toque de ajo.', price: 16.00, image: 'https://images.unsplash.com/photo-1562967914-608f82629710?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80' },
-      ],
+        id: 1,
+        name: 'Hamburguesas',
+        icon: '🍔',
+        products: [
+            { id: 101, name: 'Clásica', description: 'Carne, lechuga, tomate', price: 15.50, image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=60', isMostOrdered: true },
+            { id: 102, name: 'Doble Queso', description: 'Doble carne, doble queso', price: 22.00, image: 'https://images.unsplash.com/photo-1603064752734-4b42eff72dca?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=60', isMostOrdered: false },
+            { id: 103, name: 'Criolla', description: 'Con Huevo y Plátano', price: 20.00, image: 'https://images.unsplash.com/photo-1551782450-a2132b4ba21d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=60', isMostOrdered: false },
+        ]
     },
     {
-      id: 'acompanamientos',
-      name: 'Acompañamientos',
-      icon: '🍟',
-      products: [
-        { id: 5, name: 'Papas Fritas Clásicas', description: 'Papas naturales crocantes, servidas con ketchup o mayonesa.', price: 7.00, image: 'https://images.unsplash.com/photo-1598679253544-2c9740680140?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80', isMostOrdered: true },
-        { id: 6, name: 'Aros de Cebolla', description: 'Cebollas empanizadas y fritas, servidas con salsa tártara.', price: 8.00, image: 'https://images.unsplash.com/photo-1549849171-0761e702c270?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80' },
-        { id: 7, name: 'Nuggets de Pollo', description: 'Trozos de pollo empanizado acompañados de salsas.', price: 9.00, image: 'https://images.unsplash.com/photo-1626082912437-b615a1a1b1d8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80' },
-      ],
+        id: 2,
+        name: 'Pizzas',
+        icon: '🍕',
+        products: [
+            { id: 201, name: 'Margarita', description: 'Salsa, mozzarella, albahaca', price: 25.00, image: 'https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=60', isMostOrdered: false },
+            { id: 202, name: 'Pepperoni', description: 'Clásica de pepperoni', price: 30.00, image: 'https://images.unsplash.com/photo-1534308983496-4fabb1a015ee?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=60', isMostOrdered: true },
+        ]
     },
     {
-      id: 'bebidas',
-      name: 'Bebidas',
-      icon: '🧃',
-      products: [
-        { id: 8, name: 'Gaseosas Personales', description: 'Inca Kola, Coca-Cola, Pepsi, disponibles frías.', price: 5.00, image: 'https://images.unsplash.com/photo-1554866585-cd94860890b7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80' },
-        { id: 9, name: 'Jugos Naturales', description: 'De frutas peruanas: maracuyá, piña, fresa, mango o limón.', price: 8.00, image: 'https://images.unsplash.com/photo-1506802963788-5235b3174579?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80' },
-        { id: 10, name: 'Milkshakes', description: 'Vainilla, chocolate, fresa o galleta Oreo.', price: 12.00, image: 'https://images.unsplash.com/photo-1572490122747-3968b75cc699?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80', isMostOrdered: true },
-      ],
+        id: 3,
+        name: 'Bebidas',
+        icon: '🥤',
+        products: [
+            { id: 301, name: 'Gaseosa', description: 'Botella de 500ml', price: 5.00, image: 'https://images.unsplash.com/photo-1554866585-cd94860890b7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=60', isMostOrdered: false },
+            { id: 302, name: 'Jugo Natural', description: 'Jugo de frutas de estación', price: 8.00, image: 'https://images.unsplash.com/photo-1600271886742-f049cd451bba?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=60', isMostOrdered: true },
+        ]
     },
      {
-      id: 'postres',
-      name: 'Postres',
-      icon: '🍰',
-      products: [
-        { id: 11, name: 'Brownie con Helado', description: 'Brownie caliente con bola de helado de vainilla.', price: 10.00, image: 'https://images.unsplash.com/photo-1610412351934-eea8b7a1d354?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80' },
-        { id: 12, name: 'Cheesecake de Maracuyá', description: 'Porción de postre cremoso con cobertura natural.', price: 12.00, image: 'https://images.unsplash.com/photo-1543598223-14c1d497c31e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80' },
-      ],
-    },
+        id: 4,
+        name: 'Postres',
+        icon: '🍰',
+        products: [
+            { id: 401, name: 'Torta de Chocolate', description: 'Tajada de torta húmeda', price: 12.00, image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=60', isMostOrdered: true },
+        ]
+    }
 ];
+let menuData: Category[] = [];
+let promosData: Promo[] = localPromosData;
 
 // --- STATE ---
 let state: {
-  selectedCategory: string;
+  selectedCategoryId: number;
   cart: CartItem[];
   currentView: 'home' | 'products';
 } = {
-  selectedCategory: menuData[0].id,
+  selectedCategoryId: 0,
   cart: [],
   currentView: 'home',
 };
 
 // --- DOM ELEMENTS ---
+const loaderOverlay = document.getElementById('loader-overlay') as HTMLElement;
 const homeView = document.getElementById('home-view') as HTMLElement;
 const productsView = document.getElementById('products-view') as HTMLElement;
 const promosContainer = document.getElementById('promos-container') as HTMLElement;
@@ -169,6 +121,12 @@ const cartOverlay = document.getElementById('cart-overlay') as HTMLElement;
 const closeCartBtn = document.getElementById('close-cart-btn') as HTMLElement;
 const navCartBtn = document.getElementById('nav-cart') as HTMLElement;
 const navHomeBtn = document.getElementById('nav-home') as HTMLElement;
+const checkoutBtn = document.getElementById('checkout-btn') as HTMLElement;
+const checkoutModal = document.getElementById('checkout-modal') as HTMLElement;
+const closeCheckoutModalBtn = document.getElementById('close-checkout-modal-btn') as HTMLElement;
+const checkoutForm = document.getElementById('checkout-form') as HTMLFormElement;
+const successModal = document.getElementById('success-modal') as HTMLElement;
+const closeSuccessModalBtn = document.getElementById('close-success-modal-btn') as HTMLElement;
 
 
 // --- RENDER FUNCTIONS ---
@@ -206,7 +164,7 @@ function renderCategoryGrid() {
 
 function renderCategoriesFilter() {
   categoriesContainer.innerHTML = menuData.map(category => `
-    <div class="category-chip ${state.selectedCategory === category.id ? 'active' : ''}" data-category-id="${category.id}">
+    <div class="category-chip ${state.selectedCategoryId === category.id ? 'active' : ''}" data-category-id="${category.id}">
       ${category.name}
     </div>
   `).join('');
@@ -214,7 +172,7 @@ function renderCategoriesFilter() {
 
 function renderProducts() {
   productsGrid.innerHTML = '';
-  const category = menuData.find(c => c.id === state.selectedCategory);
+  const category = menuData.find(c => c.id === state.selectedCategoryId);
   if (!category) return;
 
   productViewTitle.textContent = category.name;
@@ -277,7 +235,6 @@ function renderApp() {
         productsView.classList.add('active');
         renderProductsScreen();
     }
-    // Cart is always rendered to keep it updated
     renderCart();
 }
 
@@ -327,7 +284,7 @@ function handleCategoryGridClick(event: Event) {
     const target = event.target as HTMLElement;
     const card = target.closest('.category-card');
     if (card instanceof HTMLElement && card.dataset.categoryId) {
-        state.selectedCategory = card.dataset.categoryId;
+        state.selectedCategoryId = Number(card.dataset.categoryId);
         state.currentView = 'products';
         renderApp();
     }
@@ -337,7 +294,7 @@ function handleCategoryFilterClick(event: Event) {
     const target = event.target as HTMLElement;
     const chip = target.closest('.category-chip');
     if (chip instanceof HTMLElement && chip.dataset.categoryId) {
-        state.selectedCategory = chip.dataset.categoryId;
+        state.selectedCategoryId = Number(chip.dataset.categoryId);
         renderProductsScreen();
     }
 }
@@ -373,8 +330,129 @@ function toggleCart(visible: boolean) {
     cartOverlay.classList.toggle('visible', visible);
 }
 
+function toggleModal(modal: HTMLElement, visible: boolean) {
+    modal.classList.toggle('visible', visible);
+}
+
+function showLoader(visible: boolean) {
+    loaderOverlay.classList.toggle('hidden', !visible);
+}
+
+// --- SUPABASE FUNCTIONS ---
+async function fetchMenuData() {
+    showLoader(true);
+    try {
+        if (supabase) {
+            const { data: categoriesData, error: categoriesError } = await supabase.from('categorias').select('*');
+            if (categoriesError) throw categoriesError;
+
+            const { data: productsData, error: productsError } = await supabase.from('productos').select('*');
+            if (productsError) throw productsError;
+
+            menuData = categoriesData.map(category => ({
+                id: category.id,
+                name: category.nombre,
+                icon: category.icono,
+                products: productsData
+                    .filter(p => p.categoria_id === category.id)
+                    .map(p => ({
+                        id: p.id,
+                        name: p.nombre,
+                        description: p.descripcion,
+                        price: p.precio,
+                        image: p.imagen_url,
+                        isMostOrdered: p.es_mas_pedido
+                    }))
+            }));
+        } else {
+             console.log("Supabase no está configurado, usando datos locales.");
+             menuData = localMenuData;
+        }
+        
+        if (menuData.length > 0) {
+            state.selectedCategoryId = menuData[0].id;
+        }
+
+    } catch (error) {
+        console.error("Error al cargar el menú desde Supabase:", error);
+        alert("No se pudo cargar el menú. Se mostrarán datos de ejemplo.");
+        menuData = localMenuData; // Fallback to local data
+        if (menuData.length > 0) {
+            state.selectedCategoryId = menuData[0].id;
+        }
+    } finally {
+        showLoader(false);
+    }
+}
+
+async function handleCheckoutSubmit(event: Event) {
+    event.preventDefault();
+    if (!supabase) {
+        alert("El sistema de pedidos no está disponible en este momento.");
+        return;
+    }
+
+    const formData = new FormData(checkoutForm);
+    const customerName = formData.get('name') as string;
+    const customerPhone = formData.get('phone') as string;
+
+    if (!customerName.trim() || !customerPhone.trim()) {
+        alert("Por favor, completa tu nombre y teléfono.");
+        return;
+    }
+
+    showLoader(true);
+    try {
+        const total = state.cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+        // 1. Insertar en la tabla 'pedidos'
+        const { data: orderData, error: orderError } = await supabase
+            .from('pedidos')
+            .insert({
+                nombre_cliente: customerName,
+                telefono_cliente: customerPhone,
+                total: total
+            })
+            .select()
+            .single();
+
+        if (orderError) throw orderError;
+        
+        const orderId = orderData.id;
+
+        // 2. Preparar los items del pedido
+        const orderItems = state.cart.map(item => ({
+            pedido_id: orderId,
+            producto_id: item.id,
+            cantidad: item.quantity,
+            precio_unitario: item.price
+        }));
+
+        // 3. Insertar en la tabla 'pedido_items'
+        const { error: itemsError } = await supabase.from('pedido_items').insert(orderItems);
+
+        if (itemsError) throw itemsError;
+
+        // Éxito
+        toggleModal(checkoutModal, false);
+        toggleCart(false);
+        toggleModal(successModal, true);
+        state.cart = []; // Limpiar carrito
+        renderCart();
+
+    } catch (error) {
+        console.error("Error al enviar el pedido:", error);
+        alert("Hubo un problema al enviar tu pedido. Por favor, intenta de nuevo.");
+    } finally {
+        showLoader(false);
+    }
+}
+
+
 // --- INITIALIZATION ---
-function init() {
+async function init() {
+  await fetchMenuData();
+  
   categoriesGridContainer.addEventListener('click', handleCategoryGridClick);
   categoriesContainer.addEventListener('click', handleCategoryFilterClick);
   productsGrid.addEventListener('click', handleProductGridClick);
@@ -383,6 +461,21 @@ function init() {
   navCartBtn.addEventListener('click', () => toggleCart(true));
   closeCartBtn.addEventListener('click', () => toggleCart(false));
   cartOverlay.addEventListener('click', () => toggleCart(false));
+  
+  checkoutBtn.addEventListener('click', () => {
+      if (state.cart.length > 0) {
+          toggleModal(checkoutModal, true);
+      } else {
+          alert("Tu carrito está vacío.");
+      }
+  });
+  closeCheckoutModalBtn.addEventListener('click', () => toggleModal(checkoutModal, false));
+  checkoutForm.addEventListener('submit', handleCheckoutSubmit);
+  closeSuccessModalBtn.addEventListener('click', () => {
+    toggleModal(successModal, false);
+    handleGoHome();
+  });
+
 
   backToHomeBtn.addEventListener('click', handleGoHome);
   navHomeBtn.addEventListener('click', handleGoHome);

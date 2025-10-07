@@ -1,5 +1,5 @@
 {
-  "name": "Pedidos51 - Sistema de Pedidos en Español",
-  "description": "Sistema de pedidos completo en español, listo para ser integrado con Supabase. Incluye una interfaz moderna, carrito de compras y un flujo de navegación optimizado para móviles y escritorio.",
+  "name": "Pedidos51 - Sistema de Pedidos con Supabase",
+  "description": "Sistema de pedidos completo en español, integrado con Supabase para la gestión de productos y la creación de pedidos en tiempo real. Incluye una interfaz moderna, carrito de compras y un flujo de navegación optimizado para móviles y escritorio.",
   "requestFramePermissions": []
 }

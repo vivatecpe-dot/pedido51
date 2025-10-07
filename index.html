@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pedidos51 - Menú Moderno</title>
+  <title>Pedidos51</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -18,6 +18,7 @@
       --white: #FFFFFF;
       --grey: #9E9E9E;
       --light-grey: #EEEEEE;
+      --success-color: #4CAF50;
       --font-family: 'Poppins', sans-serif;
       --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
       --border-radius: 16px;
@@ -310,11 +311,64 @@
     }
     .checkout-btn:hover { opacity: 0.85; }
     
+    /* --- Modals & Loaders --- */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background-color: rgba(0, 0, 0, 0.5); z-index: 2000;
+      display: none; justify-content: center; align-items: center;
+    }
+    .modal-overlay.visible {
+      display: flex;
+    }
+    .modal {
+      background-color: var(--white); border-radius: var(--border-radius);
+      padding: 2rem; width: 90%; max-width: 400px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+    }
+    .modal-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 1.5rem;
+    }
+    .modal-header h2 { font-size: 1.4rem; }
+    .modal-close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-weight: 500; margin-bottom: 0.5rem; }
+    .form-group input {
+      width: 100%; padding: 0.75rem; font-size: 1rem;
+      border: 1px solid var(--light-grey); border-radius: 8px;
+    }
+    .modal-actions { margin-top: 1.5rem; }
+    #success-modal .modal { text-align: center; }
+    #success-modal .icon { font-size: 4rem; color: var(--success-color); }
+    #success-modal h2 { margin: 1rem 0; font-size: 1.5rem; }
+    #success-modal p { color: var(--grey); margin-bottom: 1.5rem; }
+
+    #loader-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background-color: rgba(255, 255, 255, 0.8);
+      z-index: 9999; display: flex; justify-content: center; align-items: center;
+      transition: opacity 0.3s;
+    }
+    #loader-overlay.hidden {
+      opacity: 0; pointer-events: none;
+    }
+    .spinner {
+      width: 50px; height: 50px; border: 5px solid var(--light-grey);
+      border-top-color: var(--primary-color); border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
     /* --- Responsive Design for Desktop --- */
     @media (min-width: 768px) {
       #app-container {
         max-width: 1100px;
         padding: 2rem;
+      }
+      .bottom-nav {
+          max-width: 1100px;
       }
       .section-title {
         font-size: 1.5rem;
@@ -345,12 +399,15 @@
   "imports": {
     "react": "https://aistudiocdn.com/react@^19.2.0",
     "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/"
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2.44.4"
   }
 }
 </script>
 </head>
 <body>
+
+  <div id="loader-overlay"><div class="spinner"></div></div>
 
   <div id="app-container">
     <!-- Home View -->
@@ -417,9 +474,43 @@
               <span>Total</span>
               <span id="cart-total-price">S/0.00</span>
           </div>
-          <button class="checkout-btn">Finalizar Pedido</button>
+          <button class="checkout-btn" id="checkout-btn">Finalizar Pedido</button>
       </div>
   </aside>
+
+  <!-- Checkout Modal -->
+  <div id="checkout-modal" class="modal-overlay">
+      <div class="modal">
+          <div class="modal-header">
+              <h2>Completar Pedido</h2>
+              <button class="modal-close-btn" id="close-checkout-modal-btn">&times;</button>
+          </div>
+          <form id="checkout-form">
+              <div class="form-group">
+                  <label for="customer-name">Nombre</label>
+                  <input type="text" id="customer-name" name="name" required>
+              </div>
+              <div class="form-group">
+                  <label for="customer-phone">Teléfono</label>
+                  <input type="tel" id="customer-phone" name="phone" required>
+              </div>
+              <div class="modal-actions">
+                  <button type="submit" class="checkout-btn">Confirmar Pedido</button>
+              </div>
+          </form>
+      </div>
+  </div>
+
+  <!-- Success Modal -->
+  <div id="success-modal" class="modal-overlay">
+      <div class="modal">
+          <div class="icon">✅</div>
+          <h2>¡Pedido Exitoso!</h2>
+          <p>Hemos recibido tu pedido. ¡Gracias por tu compra!</p>
+          <button class="checkout-btn" id="close-success-modal-btn">Aceptar</button>
+      </div>
+  </div>
+
 
   <div id="app-root"></div>
   <script type="module" src="/index.tsx"></script>
