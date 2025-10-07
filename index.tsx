@@ -74,7 +74,7 @@ const cartOverlay = document.getElementById('cart-overlay') as HTMLElement;
 const closeCartBtn = document.getElementById('close-cart-btn') as HTMLElement;
 const navCartBtn = document.getElementById('nav-cart') as HTMLElement;
 const navHomeBtn = document.getElementById('nav-home') as HTMLElement;
-const navUserBtn = document.getElementById('nav-user') as HTMLElement;
+let navUserBtn = document.getElementById('nav-user') as HTMLElement;
 const userDisplay = document.getElementById('user-display') as HTMLElement;
 const checkoutBtn = document.getElementById('checkout-btn') as HTMLElement;
 // Modals
@@ -493,6 +493,9 @@ async function fetchUserProfile(user: User): Promise<Profile | null> {
 }
 
 function updateUserUI() {
+    const oldNavUserBtn = document.getElementById('nav-user');
+    let newNavUserBtn: HTMLElement;
+
     if (state.user && state.profile) {
         userDisplay.textContent = state.profile.full_name || state.user.email || '';
         const staffRoles: (Profile['role'])[] = ['admin', 'vendedor', 'delivery'];
@@ -503,16 +506,16 @@ function updateUserUI() {
             link.href = '/admin.html';
             link.id = 'nav-user';
             link.className = 'nav-item';
-            link.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M288 32c0-17.7-14.3-32-32-32s-32 14.3-32 32V256c0 17.7 14.3 32 32 32s32-14.3 32-32V32zM143.5 120.5c-13.6-11.3-33.1-9.5-44.5 4.1s-9.5 33.1 4.1 44.5l103.4 86.2c13.6 11.3 33.1 9.5 44.5-4.1s9.5-33.1-4.1-44.5L143.5 120.5zM512 256a256 256 0 1 0-512 0A256 256 0 1 0 512 256zM256 480a224 224 0 1 1 0-448 224 224 0 1 1 0 448z"/></svg>`;
-            navUserBtn.replaceWith(link);
+            link.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" title="Panel de Administración"><path d="M288 32c0-17.7-14.3-32-32-32s-32 14.3-32 32V256c0 17.7 14.3 32 32 32s32-14.3 32-32V32zM143.5 120.5c-13.6-11.3-33.1-9.5-44.5 4.1s-9.5 33.1 4.1 44.5l103.4 86.2c13.6 11.3 33.1 9.5 44.5-4.1s9.5-33.1-4.1-44.5L143.5 120.5zM512 256a256 256 0 1 0-512 0A256 256 0 1 0 512 256zM256 480a224 224 0 1 1 0-448 224 224 0 1 1 0 448z"/></svg>`;
+            newNavUserBtn = link;
         } else {
              // It's a regular user, keep it as a button
              const button = document.createElement('div');
              button.id = 'nav-user';
              button.className = 'nav-item';
-             button.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512H418.3c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304H178.3z"/></svg>`;
-             navUserBtn.replaceWith(button);
+             button.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" title="Mi Cuenta"><path d="M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512H418.3c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304H178.3z"/></svg>`;
              button.addEventListener('click', () => toggleModal(authModal, true));
+             newNavUserBtn = button;
         }
 
     } else {
@@ -520,10 +523,15 @@ function updateUserUI() {
         const button = document.createElement('div');
         button.id = 'nav-user';
         button.className = 'nav-item';
-        button.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512H418.3c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304H178.3z"/></svg>`;
-        navUserBtn.replaceWith(button);
+        button.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" title="Acceso"><path d="M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512H418.3c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304H178.3z"/></svg>`;
         button.addEventListener('click', () => toggleModal(authModal, true));
+        newNavUserBtn = button;
     }
+    
+    if (oldNavUserBtn) {
+        oldNavUserBtn.replaceWith(newNavUserBtn);
+    }
+    navUserBtn = newNavUserBtn;
 }
 
 async function handleLoginSubmit(event: Event) {
@@ -536,7 +544,13 @@ async function handleLoginSubmit(event: Event) {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
-        loginErrorEl.textContent = 'Email o contraseña incorrectos.';
+        let displayError = 'Error desconocido.';
+        if (error.message.toLowerCase().includes('invalid login credentials')) {
+            displayError = 'Email o contraseña incorrectos.';
+        } else if (error.message.toLowerCase().includes('email not confirmed')) {
+            displayError = 'Esta cuenta no ha sido confirmada.';
+        }
+        loginErrorEl.textContent = displayError;
     } else {
         toggleModal(authModal, false);
         loginForm.reset();
@@ -604,7 +618,7 @@ async function init() {
 
   backToHomeBtn.addEventListener('click', handleGoHome);
   navHomeBtn.addEventListener('click', handleGoHome);
-  navUserBtn.addEventListener('click', () => toggleModal(authModal, true));
+  // Initial navUserBtn listener is set in updateUserUI
 
   // Auth Modal Listeners
   closeAuthModalBtn.addEventListener('click', () => toggleModal(authModal, false));
@@ -634,6 +648,15 @@ async function init() {
     updateUserUI();
   });
 
+  // Initial call to set up the UI based on initial auth state
+  const { data: { session } } = await supabase.auth.getSession();
+  state.user = session?.user ?? null;
+  if (state.user) {
+      state.profile = await fetchUserProfile(state.user);
+  } else {
+      state.profile = null;
+  }
+  
   renderApp();
 }
 

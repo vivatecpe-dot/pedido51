@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, FormEvent } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createClient, SupabaseClient, Session, User } from '@supabase/supabase-js';
@@ -15,7 +14,7 @@ try {
 }
 
 // --- ESTRUCTURA DE DATOS (TIPOS) ---
-type OrderStatus = 'Recibido' | 'En preparacion' | 'Listo' | 'Entregado' | 'Cancelado';
+type OrderStatus = 'Recibido' | 'En preparación' | 'Listo' | 'Entregado' | 'Cancelado';
 
 type Order = {
     id: number;
@@ -58,9 +57,18 @@ const LoginComponent = () => {
         });
 
         if (error) {
-            setError(error.message);
+            let displayError = 'Error desconocido. Por favor, intenta de nuevo.';
+            if (error.message.toLowerCase().includes('invalid login credentials')) {
+                displayError = 'Email o contraseña incorrectos. Revisa los datos.';
+            } else if (error.message.toLowerCase().includes('email not confirmed')) {
+                displayError = 'La cuenta no ha sido confirmada. Revisa la configuración de "Confirm email" en Supabase.';
+            } else {
+                displayError = 'Ocurrió un error al intentar ingresar.';
+                console.error('Login Error:', error.message);
+            }
+            setError(displayError);
         }
-        // No es necesario redirigir, el onAuthStateChange lo hará
+        // El onAuthStateChange se encargará de la redirección
         setLoading(false);
     };
 
@@ -158,6 +166,15 @@ const Dashboard = ({ user }: { user: User }) => {
     const handleLogout = async () => {
         await supabase.auth.signOut();
     };
+    
+    // Función para normalizar el estado para usarlo en clases CSS
+    const getStatusClassName = (status: string | undefined | null) => {
+        if (!status) return 'Recibido';
+        return status
+            .normalize("NFD") // Separa acentos de las letras
+            .replace(/[\u0300-\u036f]/g, "") // Elimina los acentos
+            .replace(/ /g, '_'); // Reemplaza espacios con guiones bajos
+    };
 
     return (
         <div className="admin-container">
@@ -177,7 +194,7 @@ const Dashboard = ({ user }: { user: User }) => {
                             <p>No hay pedidos para mostrar.</p>
                         ) : (
                             orders.map(order => (
-                                <div key={order.id} className={`order-card status-${order.estado?.replace(' ', '_')}`}>
+                                <div key={order.id} className={`order-card status-${getStatusClassName(order.estado)}`}>
                                     <div className="order-header">
                                         <h3>Pedido #{order.numero_pedido}</h3>
                                         <span className="order-status">{order.estado || 'Recibido'}</span>
@@ -203,7 +220,7 @@ const Dashboard = ({ user }: { user: User }) => {
                                             onChange={(e) => updateOrderStatus(order.id, e.target.value as OrderStatus)}
                                         >
                                             <option value="Recibido">Recibido</option>
-                                            <option value="En preparacion">En Preparación</option>
+                                            <option value="En preparación">En Preparación</option>
                                             <option value="Listo">Listo</option>
                                             <option value="Entregado">Entregado</option>
                                             <option value="Cancelado">Cancelado</option>
