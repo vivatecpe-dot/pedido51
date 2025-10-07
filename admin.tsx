@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, FormEvent } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createClient, SupabaseClient, Session, User } from '@supabase/supabase-js';
@@ -40,11 +41,17 @@ type OrderItem = {
 
 // --- COMPONENTES DE LA UI ---
 
-const LoginComponent = () => {
+const LoginComponent = ({ initialError }: { initialError?: string | null }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(initialError || null);
+
+    useEffect(() => {
+        if (initialError) {
+            setError(initialError);
+        }
+    }, [initialError]);
 
     const handleLogin = async (e: FormEvent) => {
         e.preventDefault();
@@ -58,13 +65,11 @@ const LoginComponent = () => {
             });
 
             if (signInError) {
-                // Lanzamos el error para que sea capturado por el bloque catch
                 throw signInError;
             }
-            // Si no hay error, el onAuthStateChange se encargará de redirigir.
+            // onAuthStateChange se encargará de la verificación de rol y de renderizar el dashboard.
         } catch (err: any) {
             console.error('Login Error Object:', err);
-            // Mostramos el mensaje de error real de Supabase
             setError(err.message || 'Ocurrió un error inesperado. Revisa la consola.');
         } finally {
             setLoading(false);
@@ -239,38 +244,63 @@ const Dashboard = ({ user }: { user: User }) => {
 // --- COMPONENTE PRINCIPAL (REFACTORIZADO) ---
 const AdminApp = () => {
     const [session, setSession] = useState<Session | null>(null);
+    const [isAuthorized, setIsAuthorized] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [authError, setAuthError] = useState<string | null>(null);
 
     useEffect(() => {
-        // onAuthStateChange se dispara inmediatamente con el estado de la sesión inicial
-        // y luego escucha los cambios de inicio/cierre de sesión.
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+            setLoading(true);
+            setAuthError(null);
+            setIsAuthorized(false);
             setSession(session);
-            setLoading(false); // Una vez que tenemos el estado, dejamos de cargar.
+
+            if (session?.user) {
+                try {
+                    const { data, error, status } = await supabase
+                        .from('profiles')
+                        .select('role')
+                        .eq('id', session.user.id)
+                        .single();
+
+                    if (error && status !== 406) { // 406 is "Not a single row"
+                        throw error;
+                    }
+                    
+                    const userRole = data?.role;
+                    if (userRole && ['admin', 'vendedor', 'delivery'].includes(userRole)) {
+                        setIsAuthorized(true);
+                    } else {
+                        setAuthError("No tienes permiso para acceder a este panel.");
+                        await supabase.auth.signOut();
+                    }
+                } catch (err: any) {
+                    console.error("Admin permission check failed:", err);
+                    setAuthError("Error al verificar permisos. Contacte a soporte (RLS).");
+                    await supabase.auth.signOut();
+                }
+            }
+            setLoading(false);
         });
 
-        // Limpiamos la suscripción cuando el componente se desmonta.
         return () => {
             subscription.unsubscribe();
         };
     }, []);
 
+
     if (!supabase) {
         return <div>Error: Supabase no se pudo inicializar.</div>;
     }
 
-    // Mostramos un cargador mientras se verifica la sesión inicial.
     if (loading) {
         return <div className="loader">Verificando sesión...</div>;
     }
 
-    // Si no hay sesión, mostramos el componente de Login.
-    if (!session) {
-        return <LoginComponent />;
-    } 
-    // Si hay una sesión, mostramos el Dashboard.
-    else {
+    if (session && isAuthorized) {
         return <Dashboard user={session.user} />;
+    } else {
+        return <LoginComponent initialError={authError} />;
     }
 };
 

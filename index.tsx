@@ -555,16 +555,45 @@ async function handleLoginSubmit(event: Event) {
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
 
-    if (error) {
-        console.error('Login Error:', error);
-        loginErrorEl.textContent = error.message; // Mostrar siempre el mensaje de error real de Supabase
-    } else {
-        toggleModal(authModal, false);
-        loginForm.reset();
+    if (signInError) {
+        console.error('Login Error:', signInError);
+        loginErrorEl.textContent = signInError.message;
+        return;
     }
+
+    if (signInData.user) {
+        try {
+            // After successful auth, immediately check if the profile is readable.
+            // This catches RLS issues before the user leaves the login modal.
+            const { error: profileError } = await supabase
+                .from('profiles')
+                .select('role') // Selecting a small column is fine.
+                .eq('id', signInData.user.id)
+                .single();
+
+            if (profileError) {
+                // This is the "Database error querying schema" scenario.
+                console.error('Database error querying profile after login:', profileError);
+                loginErrorEl.textContent = 'Error al leer el perfil. Verifique los permisos de la base de datos (RLS).';
+                // Sign the user out to prevent a broken, half-logged-in state.
+                await supabase.auth.signOut();
+                return; // Stay in the modal to show the error.
+            }
+        } catch (e) {
+             console.error('Unexpected error during profile check:', e);
+             loginErrorEl.textContent = 'Ocurrió un error inesperado al verificar el perfil.';
+             await supabase.auth.signOut();
+             return;
+        }
+    }
+
+    // If we reach here, both auth and profile check passed.
+    toggleModal(authModal, false);
+    loginForm.reset();
 }
+
 
 async function handleSignupSubmit(event: Event) {
     event.preventDefault();
