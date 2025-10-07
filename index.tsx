@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { createClient, SupabaseClient, User, Session } from '@supabase/supabase-js';
@@ -477,6 +478,15 @@ async function handleCheckoutSubmit(event: Event) {
 }
 
 // --- SUPABASE AUTH FUNCTIONS ---
+async function handleLogout() {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+        console.error('Error logging out:', error);
+        alert('Error al cerrar sesión.');
+    }
+    // onAuthStateChange will handle UI update.
+}
+
 async function fetchUserProfile(user: User): Promise<Profile | null> {
     try {
         const { data, error } = await supabase
@@ -496,29 +506,8 @@ function updateUserUI() {
     const oldNavUserBtn = document.getElementById('nav-user');
     let newNavUserBtn: HTMLElement;
 
-    if (state.user && state.profile) {
-        userDisplay.textContent = state.profile.full_name || state.user.email || '';
-        const staffRoles: (Profile['role'])[] = ['admin', 'vendedor', 'delivery'];
-        
-        if (staffRoles.includes(state.profile.role)) {
-            // Convert to an anchor tag to link to admin panel
-            const link = document.createElement('a');
-            link.href = '/admin.html';
-            link.id = 'nav-user';
-            link.className = 'nav-item';
-            link.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" title="Panel de Administración"><path d="M288 32c0-17.7-14.3-32-32-32s-32 14.3-32 32V256c0 17.7 14.3 32 32 32s32-14.3 32-32V32zM143.5 120.5c-13.6-11.3-33.1-9.5-44.5 4.1s-9.5 33.1 4.1 44.5l103.4 86.2c13.6 11.3 33.1 9.5 44.5-4.1s9.5-33.1-4.1-44.5L143.5 120.5zM512 256a256 256 0 1 0-512 0A256 256 0 1 0 512 256zM256 480a224 224 0 1 1 0-448 224 224 0 1 1 0 448z"/></svg>`;
-            newNavUserBtn = link;
-        } else {
-             // It's a regular user, keep it as a button
-             const button = document.createElement('div');
-             button.id = 'nav-user';
-             button.className = 'nav-item';
-             button.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" title="Mi Cuenta"><path d="M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512H418.3c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304H178.3z"/></svg>`;
-             button.addEventListener('click', () => toggleModal(authModal, true));
-             newNavUserBtn = button;
-        }
-
-    } else {
+    if (!state.user) {
+        // --- User is NOT logged in ---
         userDisplay.textContent = '';
         const button = document.createElement('div');
         button.id = 'nav-user';
@@ -526,6 +515,31 @@ function updateUserUI() {
         button.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" title="Acceso"><path d="M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512H418.3c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304H178.3z"/></svg>`;
         button.addEventListener('click', () => toggleModal(authModal, true));
         newNavUserBtn = button;
+    } else {
+        // --- User IS logged in ---
+        // Display name, fallback to email if profile/name is missing
+        userDisplay.textContent = state.profile?.full_name || state.user.email || '';
+        
+        const isStaff = state.profile && ['admin', 'vendedor', 'delivery'].includes(state.profile.role as string);
+
+        if (isStaff) {
+            // --- Staff user with a loaded profile ---
+            const link = document.createElement('a');
+            link.href = '/admin.html';
+            link.id = 'nav-user';
+            link.className = 'nav-item';
+            link.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" title="Panel de Administración"><path d="M288 32c0-17.7-14.3-32-32-32s-32 14.3-32 32V256c0 17.7 14.3 32 32 32s32-14.3 32-32V32zM143.5 120.5c-13.6-11.3-33.1-9.5-44.5 4.1s-9.5 33.1 4.1 44.5l103.4 86.2c13.6 11.3 33.1 9.5 44.5-4.1s9.5-33.1-4.1-44.5L143.5 120.5zM512 256a256 256 0 1 0-512 0A256 256 0 1 0 512 256zM256 480a224 224 0 1 1 0-448 224 224 0 1 1 0 448z"/></svg>`;
+            newNavUserBtn = link;
+        } else {
+            // --- Regular user, OR any user whose profile failed to load ---
+            // This is the safe fallback: the user is authenticated, so we show a logout button.
+             const button = document.createElement('div');
+             button.id = 'nav-user';
+             button.className = 'nav-item';
+             button.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" title="Cerrar Sesión"><path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z"/></svg>`;
+             button.addEventListener('click', handleLogout);
+             newNavUserBtn = button;
+        }
     }
     
     if (oldNavUserBtn) {
