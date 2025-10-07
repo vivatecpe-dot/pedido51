@@ -21,7 +21,7 @@ type Order = {
     numero_pedido: string;
     nombre_cliente: string;
     telefono_cliente: string;
-    direccion: string;
+    direccion: string | null;
     total: number;
     created_at: string;
     estado: OrderStatus;
@@ -51,24 +51,17 @@ const LoginComponent = () => {
         setLoading(true);
         setError(null);
 
-        const { error } = await supabase.auth.signInWithPassword({
+        const { error: signInError } = await supabase.auth.signInWithPassword({
             email,
             password,
         });
 
-        if (error) {
-            let displayError = 'Error desconocido. Por favor, intenta de nuevo.';
-            if (error.message.toLowerCase().includes('invalid login credentials')) {
-                displayError = 'Email o contraseña incorrectos. Revisa los datos.';
-            } else if (error.message.toLowerCase().includes('email not confirmed')) {
-                displayError = "Esta cuenta no está activada. Por favor, ve a Supabase > Authentication > Providers > Email y DESACTIVA la opción 'Confirm email'.";
-            } else {
-                displayError = 'Ocurrió un error al intentar ingresar.';
-                console.error('Login Error:', error.message);
-            }
-            setError(displayError);
+        if (signInError) {
+            console.error('Supabase Login Error:', signInError);
+            // **MEJORA CLAVE:** Mostrar el mensaje de error real de Supabase.
+            setError(signInError.message || 'Ocurrió un error inesperado.');
         }
-        // El onAuthStateChange se encargará de la redirección
+        // El onAuthStateChange se encargará del resto si el login es exitoso.
         setLoading(false);
     };
 
@@ -201,7 +194,7 @@ const Dashboard = ({ user }: { user: User }) => {
                                     </div>
                                     <div className="order-body">
                                         <p><strong>Cliente:</strong> {order.nombre_cliente}</p>
-                                        <p><strong>Dirección:</strong> {order.direccion}</p>
+                                        <p><strong>Dirección:</strong> {order.direccion || 'Sin dirección'}</p>
                                         <p><strong>Teléfono:</strong> {order.telefono_cliente}</p>
                                         <p><strong>Fecha:</strong> {new Date(order.created_at).toLocaleString('es-PE')}</p>
                                         <p><strong>Total:</strong> S/{(order.total || 0).toFixed(2)}</p>
