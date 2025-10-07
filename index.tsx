@@ -127,6 +127,7 @@ const closeCheckoutModalBtn = document.getElementById('close-checkout-modal-btn'
 const checkoutForm = document.getElementById('checkout-form') as HTMLFormElement;
 const successModal = document.getElementById('success-modal') as HTMLElement;
 const closeSuccessModalBtn = document.getElementById('close-success-modal-btn') as HTMLElement;
+const printTicketBtn = document.getElementById('print-ticket-btn') as HTMLElement;
 
 
 // --- RENDER FUNCTIONS ---
@@ -338,6 +339,74 @@ function showLoader(visible: boolean) {
     loaderOverlay.classList.toggle('hidden', !visible);
 }
 
+// --- SUCCESS & PRINTING ---
+function showSuccessScreen(orderNumber: string, customerName: string, cart: CartItem[], total: number) {
+    const successSummaryContainer = document.getElementById('success-order-summary') as HTMLElement;
+    const printableTicketContainer = document.getElementById('printable-ticket') as HTMLElement;
+
+    const summaryHtml = `
+        <h4>Pedido: ${orderNumber}</h4>
+        <p>Cliente: ${customerName}</p>
+        <hr>
+        ${cart.map(item => `
+            <div class="summary-item">
+                <span>${item.quantity}x ${item.name}</span>
+                <span>S/${(item.price * item.quantity).toFixed(2)}</span>
+            </div>
+        `).join('')}
+        <hr>
+        <div class="summary-total">
+            <span>Total</span>
+            <span>S/${total.toFixed(2)}</span>
+        </div>
+    `;
+
+    const ticketHtml = `
+        <div class="ticket-header">
+            <h3>Pedidos51</h3>
+            <p>Comanda de Cocina</p>
+            <p>${new Date().toLocaleString('es-PE')}</p>
+            <hr class="ticket-divider">
+            <p><strong>Pedido: ${orderNumber}</strong></p>
+            <p>Cliente: ${customerName}</p>
+        </div>
+        <hr class="ticket-divider">
+        <div class="ticket-items">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="col-qty">Cant</th>
+                        <th class="col-item">Producto</th>
+                        <th class="col-price">Precio</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${cart.map(item => `
+                        <tr>
+                            <td class="col-qty">${item.quantity}</td>
+                            <td class="col-item">${item.name}</td>
+                            <td class="col-price">S/${item.price.toFixed(2)}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+        <hr class="ticket-divider">
+        <div class="ticket-total">
+            TOTAL: S/${total.toFixed(2)}
+        </div>
+        <div class="ticket-footer">
+            <p>¡Gracias por su pedido!</p>
+        </div>
+    `;
+    
+    successSummaryContainer.innerHTML = summaryHtml;
+    printableTicketContainer.innerHTML = ticketHtml;
+
+    toggleModal(successModal, true);
+}
+
+
 // --- SUPABASE FUNCTIONS ---
 async function fetchMenuData() {
     showLoader(true);
@@ -419,6 +488,7 @@ async function handleCheckoutSubmit(event: Event) {
         if (orderError) throw orderError;
         
         const orderId = orderData.id;
+        const orderNumber = orderData.numero_pedido;
 
         // 2. Preparar los items del pedido
         const orderItems = state.cart.map(item => ({
@@ -436,7 +506,7 @@ async function handleCheckoutSubmit(event: Event) {
         // Éxito
         toggleModal(checkoutModal, false);
         toggleCart(false);
-        toggleModal(successModal, true);
+        showSuccessScreen(orderNumber, customerName, state.cart, total);
         state.cart = []; // Limpiar carrito
         renderCart();
 
@@ -471,9 +541,13 @@ async function init() {
   });
   closeCheckoutModalBtn.addEventListener('click', () => toggleModal(checkoutModal, false));
   checkoutForm.addEventListener('submit', handleCheckoutSubmit);
+  
   closeSuccessModalBtn.addEventListener('click', () => {
     toggleModal(successModal, false);
     handleGoHome();
+  });
+  printTicketBtn.addEventListener('click', () => {
+    window.print();
   });
 
 

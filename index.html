@@ -340,8 +340,63 @@
     .modal-actions { margin-top: 1.5rem; }
     #success-modal .modal { text-align: center; }
     #success-modal .icon { font-size: 4rem; color: var(--success-color); }
-    #success-modal h2 { margin: 1rem 0; font-size: 1.5rem; }
+    #success-modal h2 { margin: 1rem 0 0.5rem 0; font-size: 1.5rem; }
     #success-modal p { color: var(--grey); margin-bottom: 1.5rem; }
+
+    .modal-actions-grid {
+        margin-top: 1.5rem;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+    .secondary-btn {
+        width: 100%;
+        padding: 1rem;
+        font-size: 1rem;
+        font-weight: 600;
+        background-color: var(--light-grey);
+        color: var(--primary-color);
+        border: 1px solid #ddd;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    .secondary-btn:hover {
+        background-color: #e0e0e0;
+    }
+    #success-order-summary {
+        background-color: var(--background-color);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+        text-align: left;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    #success-order-summary h4 {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    #success-order-summary p {
+        margin-bottom: 0.25rem;
+        color: var(--primary-color);
+    }
+    #success-order-summary .summary-item {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.9rem;
+    }
+    #success-order-summary hr {
+        border: none;
+        border-top: 1px dashed var(--grey);
+        margin: 0.5rem 0;
+    }
+    #success-order-summary .summary-total {
+        font-weight: 700;
+        font-size: 1rem;
+        display: flex;
+        justify-content: space-between;
+    }
 
     #loader-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -390,6 +445,60 @@
     @media (min-width: 1024px) {
         .products-grid {
             grid-template-columns: repeat(4, 1fr);
+        }
+    }
+
+    /* --- Print Styles for 58mm Ticket --- */
+    @media print {
+        body * {
+            visibility: hidden;
+        }
+        #printable-ticket, #printable-ticket * {
+            visibility: visible;
+        }
+        #printable-ticket {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 58mm;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 10pt;
+            color: #000;
+        }
+        .ticket-header, .ticket-footer {
+            text-align: center;
+        }
+        .ticket-header h3 {
+            margin: 0;
+            font-size: 12pt;
+        }
+        .ticket-header p {
+            margin: 2px 0;
+        }
+        .ticket-items table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .ticket-items th, .ticket-items td {
+            padding: 2px 0;
+        }
+        .ticket-items th {
+            text-align: left;
+            border-bottom: 1px dashed #000;
+        }
+        .col-qty { width: 15%; text-align: right; padding-right: 4px; }
+        .col-item { width: 60%; }
+        .col-price { width: 25%; text-align: right; }
+        .ticket-total {
+            margin-top: 5px;
+            text-align: right;
+            font-weight: bold;
+            font-size: 11pt;
+        }
+        hr.ticket-divider {
+            border: none;
+            border-top: 1px dashed #000;
+            margin: 5px 0;
         }
     }
 
@@ -506,11 +615,18 @@
       <div class="modal">
           <div class="icon">✅</div>
           <h2>¡Pedido Exitoso!</h2>
-          <p>Hemos recibido tu pedido. ¡Gracias por tu compra!</p>
-          <button class="checkout-btn" id="close-success-modal-btn">Aceptar</button>
+          <p>Hemos recibido tu pedido. Revisa el resumen:</p>
+          <div id="success-order-summary">
+              <!-- Dynamic content here -->
+          </div>
+          <div class="modal-actions-grid">
+              <button class="secondary-btn" id="print-ticket-btn">Imprimir Comanda</button>
+              <button class="checkout-btn" id="close-success-modal-btn">Aceptar</button>
+          </div>
       </div>
   </div>
 
+  <div id="printable-ticket" aria-hidden="true"></div>
 
   <div id="app-root"></div>
   <script type="module" src="/index.tsx"></script>
